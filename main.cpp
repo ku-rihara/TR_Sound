@@ -30,7 +30,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (n = 0; n < pcm.length; n++) {
 		pcm.s[n] *= gain;
 	}
-	wave_write_16bit_mono(&pcm, "Box.wav");
+wave_write_16bit_mono(&pcm, "Box.wav");
 	// 可視化のための座標取得
 	int num_points = pcm.length / 100; // 100分割
 	float* waveX = new float[num_points];

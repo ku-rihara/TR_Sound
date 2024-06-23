@@ -14,6 +14,12 @@
     <Filter Include="KamataEngine\Adapter">
       <UniqueIdentifier>{c6468eb4-788b-4a83-b207-a5f4804e56c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="KamataEngine\.cpp">
+      <UniqueIdentifier>{5c890185-90fb-432c-a805-ac552778512b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include=".h">
+      <UniqueIdentifier>{b2f4a157-0b3f-4c72-9789-3f5489bf681d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp">
@@ -38,8 +44,20 @@
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\StringUtility.cpp">
       <Filter>KamataEngine\Source</Filter>
     </ClCompile>
+    <ClCompile Include="BaseObj.cpp">
+      <Filter>KamataEngine\.cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundWave.cpp">
+      <Filter>KamataEngine\.cpp</Filter>
+    </ClCompile>
     <ClCompile Include="wave.cpp">
-      <Filter>KamataEngine</Filter>
+      <Filter>KamataEngine\.cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2C.cpp">
+      <Filter>KamataEngine\.cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix3x3.cpp">
+      <Filter>KamataEngine\.cpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +132,20 @@
     <ClInclude Include="C:\KamataEngine\DirectXGame\base\StringUtility.h">
       <Filter>KamataEngine\Include</Filter>
     </ClInclude>
-    <ClInclude Include="wave.h" />
+    <ClInclude Include="Vector2C.h">
+      <Filter>.h</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundWave.h">
+      <Filter>.h</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseObj.h">
+      <Filter>.h</Filter>
+    </ClInclude>
+    <ClInclude Include="wave.h">
+      <Filter>.h</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix3x3.h">
+      <Filter>.h</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
