@@ -22,12 +22,12 @@ void SoundWave::CreateWave() {
 
 void SoundWave::WaveVisualize() {
 	// 可視化のための座標取得
-	int num_points = monoPcm_.length / 100; // 100分割
+	int num_points = monoPcm_.length / 200; // 100分割
 	float* waveX = new float[num_points];
 	float* waveY = new float[num_points];
 	for (int k = 0; k < num_points; k++) {
 		waveX[k] = float(k * 1280 / num_points);
-		waveY[k] = float(360 + monoPcm_.s[k * 100] * 300); // Y座標を中央にシフトし、スケーリング
+		waveY[k] = float(360 + monoPcm_.s[k * 200] * 300); // Y座標を中央にシフトし、スケーリング
 	}
 
 	for (int k = 0; k < num_points - 1; k++) {
