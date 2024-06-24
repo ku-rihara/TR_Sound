@@ -109,6 +109,7 @@ xcopy C:\KamataEngine\DirectXGame\Resources "$(OutDirFullPath)NoviceResources" /
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BaseObj.cpp" />
+    <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\StringUtility.cpp" />
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp" />
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\WinApp.cpp" />
@@ -118,12 +119,15 @@ xcopy C:\KamataEngine\DirectXGame\Resources "$(OutDirFullPath)NoviceResources" /
     <ClCompile Include="C:\KamataEngine\Adapter\Novice.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix3x3.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="ScenePrototype.cpp" />
     <ClCompile Include="SoundWave.cpp" />
     <ClCompile Include="Vector2C.cpp" />
     <ClCompile Include="wave.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseObj.h" />
+    <ClInclude Include="BaseScene.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\base\StringUtility.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\math\Matrix4x4.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector2.h" />
@@ -152,6 +156,8 @@ xcopy C:\KamataEngine\DirectXGame\Resources "$(OutDirFullPath)NoviceResources" /
     <ClInclude Include="C:\KamataEngine\DirectXGame\scene\GameScene.h" />
     <ClInclude Include="C:\KamataEngine\Adapter\Novice.h" />
     <ClInclude Include="Matrix3x3.h" />
+    <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="ScenePrototype.h" />
     <ClInclude Include="SoundWave.h" />
     <ClInclude Include="Vector2C.h" />
     <ClInclude Include="wave.h" />

@@ -20,6 +20,9 @@
     <Filter Include=".h">
       <UniqueIdentifier>{b2f4a157-0b3f-4c72-9789-3f5489bf681d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{8e6b82a6-f592-46b9-a31c-a184916566d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp">
@@ -58,6 +61,15 @@
     </ClCompile>
     <ClCompile Include="Matrix3x3.cpp">
       <Filter>KamataEngine\.cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ScenePrototype.cpp">
+      <Filter>Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +158,15 @@
     </ClInclude>
     <ClInclude Include="Matrix3x3.h">
       <Filter>.h</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseScene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ScenePrototype.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

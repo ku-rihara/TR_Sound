@@ -3,13 +3,8 @@
 
 void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name)
 {
-	ifstream file(file_name, ios::binary); // バイナリモードでファイルを開く
 
-	if (!file.is_open()) {
-		cerr << "Failed to open file: " << file_name << endl;
-		return;
-	}
-
+	FILE* file;
 	char riff_chunk_ID[4];
 	long riff_chunk_size;
 	char file_format_type[4];
@@ -25,22 +20,24 @@ void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name)
 	long data_chunk_size;
 	unsigned char data;
 	int n;
-
+	if (fopen_s(&file, file_name, "rb") != 0) {
+		return;
+	}
 	// WAVファイルのヘッダ情報を読み込む
-	file.read(reinterpret_cast<char*>(riff_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&riff_chunk_size), sizeof(riff_chunk_size));
-	file.read(reinterpret_cast<char*>(file_format_type), 4);
-	file.read(reinterpret_cast<char*>(fmt_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&fmt_chunk_size), sizeof(fmt_chunk_size));
-	file.read(reinterpret_cast<char*>(&wave_format_type), sizeof(wave_format_type));
-	file.read(reinterpret_cast<char*>(&channel), sizeof(channel));
-	file.read(reinterpret_cast<char*>(&samples_per_sec), sizeof(samples_per_sec));
-	file.read(reinterpret_cast<char*>(&bytes_per_sec), sizeof(bytes_per_sec));
-	file.read(reinterpret_cast<char*>(&block_size), sizeof(block_size));
-	file.read(reinterpret_cast<char*>(&bits_per_sample), sizeof(bits_per_sample));
-	file.read(reinterpret_cast<char*>(data_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&data_chunk_size), sizeof(data_chunk_size));
-
+	fread(riff_chunk_ID, 1, 4, file);
+	fread(&riff_chunk_size, 4, 1, file);
+	fread(file_format_type, 1, 4, file);
+	fread(fmt_chunk_ID, 1, 4, file);
+	fread(&fmt_chunk_size, 4, 1, file);
+	fread(&wave_format_type, 2, 1, file);
+	fread(&channel, 2, 1, file);
+	fread(&samples_per_sec, 4, 1, file);
+	fread(&bytes_per_sec, 4, 1, file);
+	fread(&block_size, 2, 1, file);
+	fread(&bits_per_sample, 2, 1, file);
+	fread(data_chunk_ID, 1, 4, file);
+	fread(&data_chunk_size, 4, 1, file);
+	
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size; /* 音データの長さ */
@@ -49,21 +46,16 @@ void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name)
 	// 音データを読み込む
 	for (n = 0; n < pcm->length; n++)
 	{
-		file.read(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データの読み取り */
+		fread(&data, 2, 1, file); /* 音データの読み取り */
 		pcm->s[n] = ((double)data - 128.0) / 128.0; /* 音データを-1以上1未満の範囲に正規化する */
 	}
 
-	file.close();
+	fclose(file);
 }
 
 void wave_write_8bit_mono(MONO_PCM* pcm, const char* file_name)
 {
-	ofstream file(file_name, ios::binary); // バイナリモードでファイルを開く
-
-	if (!file.is_open()) {
-		cerr << "Failed to open file: " << file_name << endl;
-		return;
-	}
+	FILE* file;
 
 	char riff_chunk_ID[4] = { 'R', 'I', 'F', 'F' };
 	long riff_chunk_size = 36 + pcm->length;
@@ -81,20 +73,25 @@ void wave_write_8bit_mono(MONO_PCM* pcm, const char* file_name)
 	char data_chunk_ID[4] = { 'd', 'a', 't', 'a' };
 	long data_chunk_size = pcm->length;
 
+	if (fopen_s(&file, file_name, "wb") != 0) {
+		return;
+	}
+
 	// WAVファイルのヘッダ情報を書き込む
-	file.write(reinterpret_cast<char*>(riff_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&riff_chunk_size), sizeof(riff_chunk_size));
-	file.write(reinterpret_cast<char*>(file_format_type), 4);
-	file.write(reinterpret_cast<char*>(fmt_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&fmt_chunk_size), sizeof(fmt_chunk_size));
-	file.write(reinterpret_cast<char*>(&wave_format_type), sizeof(wave_format_type));
-	file.write(reinterpret_cast<char*>(&channel), sizeof(channel));
-	file.write(reinterpret_cast<char*>(&samples_per_sec), sizeof(samples_per_sec));
-	file.write(reinterpret_cast<char*>(&bytes_per_sec), sizeof(bytes_per_sec));
-	file.write(reinterpret_cast<char*>(&block_size), sizeof(block_size));
-	file.write(reinterpret_cast<char*>(&bits_per_sample), sizeof(bits_per_sample));
-	file.write(reinterpret_cast<char*>(data_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&data_chunk_size), sizeof(data_chunk_size));
+	fwrite(riff_chunk_ID, 1, 4, file);
+	fwrite(&riff_chunk_size, 4, 1, file);
+	fwrite(file_format_type, 1, 4, file);
+	fwrite(fmt_chunk_ID, 1, 4, file);
+	fwrite(&fmt_chunk_size, 4, 1, file);
+	fwrite(&wave_format_type, 2, 1, file);
+	fwrite(&channel, 2, 1, file);
+	fwrite(&samples_per_sec, 4, 1, file);
+	fwrite(&bytes_per_sec, 4, 1, file);
+	fwrite(&block_size, 2, 1, file);
+	fwrite(&bits_per_sample, 2, 1, file);
+	fwrite(data_chunk_ID, 1, 4, file);
+	fwrite(&data_chunk_size, 4, 1, file);
+
 
 	// 音データを書き込む
 	for (int n = 0; n < pcm->length; n++)
@@ -111,28 +108,21 @@ void wave_write_8bit_mono(MONO_PCM* pcm, const char* file_name)
 		}
 
 		unsigned char data = static_cast<unsigned char>(round(s)); /* 四捨五入 */
-		file.write(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データの書き出し */
+		fwrite(&data, 2, 1, file); /* 音データの書き出し */
 	}
 
 	if ((pcm->length % 2) == 1) /* 音データの長さが奇数のとき */
 	{
 		unsigned char data = 0;
-		file.write(reinterpret_cast<char*>(&data), sizeof(data)); /* 0パディング */
+		fwrite(&data, 2, 1, file); /* 0パディング */
 	}
-
-	file.close();
+	fclose(file);
 }
 
 
 void wave_read_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 {
-	ifstream file(file_name, ios::binary); // バイナリモードでファイルを開く
-
-	if (!file.is_open()) {
-		cerr << "Failed to open file: " << file_name << endl;
-		return;
-	}
-
+	FILE* file;
 	char riff_chunk_ID[4];
 	long riff_chunk_size;
 	char file_format_type[4];
@@ -148,21 +138,25 @@ void wave_read_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	long data_chunk_size;
 	unsigned char data;
 	int n;
+	if (fopen_s(&file, file_name, "rb") != 0) {
+		return;
+	}
 
 	// WAVファイルのヘッダ情報を読み込む
-	file.read(reinterpret_cast<char*>(riff_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&riff_chunk_size), sizeof(riff_chunk_size));
-	file.read(reinterpret_cast<char*>(file_format_type), 4);
-	file.read(reinterpret_cast<char*>(fmt_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&fmt_chunk_size), sizeof(fmt_chunk_size));
-	file.read(reinterpret_cast<char*>(&wave_format_type), sizeof(wave_format_type));
-	file.read(reinterpret_cast<char*>(&channel), sizeof(channel));
-	file.read(reinterpret_cast<char*>(&samples_per_sec), sizeof(samples_per_sec));
-	file.read(reinterpret_cast<char*>(&bytes_per_sec), sizeof(bytes_per_sec));
-	file.read(reinterpret_cast<char*>(&block_size), sizeof(block_size));
-	file.read(reinterpret_cast<char*>(&bits_per_sample), sizeof(bits_per_sample));
-	file.read(reinterpret_cast<char*>(data_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&data_chunk_size), sizeof(data_chunk_size));
+	fread(riff_chunk_ID, 1, 4, file);
+	fread(&riff_chunk_size, 4, 1, file);
+	fread(file_format_type, 1, 4, file);
+	fread(fmt_chunk_ID, 1, 4, file);
+	fread(&fmt_chunk_size, 4, 1, file);
+	fread(&wave_format_type, 2, 1, file);
+	fread(&channel, 2, 1, file);
+	fread(&samples_per_sec, 4, 1, file);
+	fread(&bytes_per_sec, 4, 1, file);
+	fread(&block_size, 2, 1, file);
+	fread(&bits_per_sample, 2, 1, file);
+	fread(data_chunk_ID, 1, 4, file);
+	fread(&data_chunk_size, 4, 1, file);
+
 
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
@@ -173,25 +167,19 @@ void wave_read_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	// 音データを読み込む
 	for (n = 0; n < pcm->dataLength; n++)
 	{
-		file.read(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データ（Lチャンネル）の読み取り */
+		fread(&data, 2, 1, file); /* 音データ（Lチャンネル）の読み取り */
 		pcm->sL[n] = ((double)data - 128.0) / 128.0; /* 音データを-1以上1未満の範囲に正規化する */
 
-		file.read(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データ（Rチャンネル）の読み取り */
+		fread(&data, 2, 1, file); /* 音データ（Rチャンネル）の読み取り */
 		pcm->sR[n] = ((double)data - 128.0) / 128.0; /* 音データを-1以上1未満の範囲に正規化する */
 	}
 
-	file.close();
+	fclose(file);
 }
 
 void wave_write_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 {
-	ofstream file(file_name, ios::binary); // バイナリモードでファイルを開く
-
-	if (!file.is_open()) {
-		cerr << "Failed to open file: " << file_name << endl;
-		return;
-	}
-
+	FILE* file;
 	char riff_chunk_ID[4] = { 'R', 'I', 'F', 'F' };
 	long riff_chunk_size = 36 + pcm->dataLength * 2;
 	char file_format_type[4] = { 'W', 'A', 'V', 'E' };
@@ -208,20 +196,23 @@ void wave_write_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	char data_chunk_ID[4] = { 'd', 'a', 't', 'a' };
 	long data_chunk_size = pcm->dataLength * 2;
 
+	if (fopen_s(&file, file_name, "wb") != 0) {
+		return;
+	}
 	// WAVファイルのヘッダ情報を書き込む
-	file.write(reinterpret_cast<char*>(riff_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&riff_chunk_size), sizeof(riff_chunk_size));
-	file.write(reinterpret_cast<char*>(file_format_type), 4);
-	file.write(reinterpret_cast<char*>(fmt_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&fmt_chunk_size), sizeof(fmt_chunk_size));
-	file.write(reinterpret_cast<char*>(&wave_format_type), sizeof(wave_format_type));
-	file.write(reinterpret_cast<char*>(&channel), sizeof(channel));
-	file.write(reinterpret_cast<char*>(&samples_per_sec), sizeof(samples_per_sec));
-	file.write(reinterpret_cast<char*>(&bytes_per_sec), sizeof(bytes_per_sec));
-	file.write(reinterpret_cast<char*>(&block_size), sizeof(block_size));
-	file.write(reinterpret_cast<char*>(&bits_per_sample), sizeof(bits_per_sample));
-	file.write(reinterpret_cast<char*>(data_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&data_chunk_size), sizeof(data_chunk_size));
+	fwrite(riff_chunk_ID, 1, 4, file);
+	fwrite(&riff_chunk_size, 4, 1, file);
+	fwrite(file_format_type, 1, 4, file);
+	fwrite(fmt_chunk_ID, 1, 4, file);
+	fwrite(&fmt_chunk_size, 4, 1, file);
+	fwrite(&wave_format_type, 2, 1, file);
+	fwrite(&channel, 2, 1, file);
+	fwrite(&samples_per_sec, 4, 1, file);
+	fwrite(&bytes_per_sec, 4, 1, file);
+	fwrite(&block_size, 2, 1, file);
+	fwrite(&bits_per_sample, 2, 1, file);
+	fwrite(data_chunk_ID, 1, 4, file);
+	fwrite(&data_chunk_size, 4, 1, file);
 
 	// 音データを書き込む
 	for (int n = 0; n < pcm->dataLength; n++)
@@ -238,7 +229,7 @@ void wave_write_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 		}
 
 		unsigned char data = static_cast<unsigned char>(round(sL)); /* 四捨五入 */
-		file.write(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データ（Lチャンネル）の書き出し */
+		fwrite(&data, 2, 1, file); /* 音データ（Lチャンネル）の書き出し */
 
 		double sR = (pcm->sR[n] + 1.0) / 2.0 * 256.0;
 
@@ -252,10 +243,10 @@ void wave_write_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 		}
 
 		data = static_cast<unsigned char>(round(sR)); /* 四捨五入 */
-		file.write(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データ（Rチャンネル）の書き出し */
+		fwrite(&data, 2, 1, file); /* 音データ（Rチャンネル）の書き出し */
 	}
 
-	file.close();
+	fclose(file);
 }
 
 void wave_read_16bit_mono(MONO_PCM* pcm, const char* file_name)
@@ -398,12 +389,7 @@ void wave_write_16bit_mono(MONO_PCM* pcm, const char* file_name)
 
 void wave_read_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 {
-	ifstream file(file_name, ios::binary); // バイナリモードでファイルを開く
-
-	if (!file.is_open()) {
-		cerr << "Failed to open file: " << file_name << endl;
-		return;
-	}
+	FILE* file;
 	char riff_chunk_ID[4];
 	long riff_chunk_size;
 	char file_format_type[4];
@@ -419,20 +405,22 @@ void wave_read_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	long data_chunk_size;
 	short data;
 	int n;
-
-	file.read(reinterpret_cast<char*>(riff_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&riff_chunk_size), sizeof(riff_chunk_size));
-	file.read(reinterpret_cast<char*>(file_format_type), 4);
-	file.read(reinterpret_cast<char*>(fmt_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&fmt_chunk_size), sizeof(fmt_chunk_size));
-	file.read(reinterpret_cast<char*>(&wave_format_type), sizeof(wave_format_type));
-	file.read(reinterpret_cast<char*>(&channel), sizeof(channel));
-	file.read(reinterpret_cast<char*>(&samples_per_sec), sizeof(samples_per_sec));
-	file.read(reinterpret_cast<char*>(&bytes_per_sec), sizeof(bytes_per_sec));
-	file.read(reinterpret_cast<char*>(&block_size), sizeof(block_size));
-	file.read(reinterpret_cast<char*>(&bits_per_sample), sizeof(bits_per_sample));
-	file.read(reinterpret_cast<char*>(data_chunk_ID), 4);
-	file.read(reinterpret_cast<char*>(&data_chunk_size), sizeof(data_chunk_size));
+	if (fopen_s(&file, file_name, "rb") != 0) {
+		return;
+	}
+	fread(riff_chunk_ID, 1, 4, file);
+	fread(&riff_chunk_size, 4, 1, file);
+	fread(file_format_type, 1, 4, file);
+	fread(fmt_chunk_ID, 1, 4, file);
+	fread(&fmt_chunk_size, 4, 1, file);
+	fread(&wave_format_type, 2, 1, file);
+	fread(&channel, 2, 1, file);
+	fread(&samples_per_sec, 4, 1, file);
+	fread(&bytes_per_sec, 4, 1, file);
+	fread(&block_size, 2, 1, file);
+	fread(&bits_per_sample, 2, 1, file);
+	fread(data_chunk_ID, 1, 4, file);
+	fread(&data_chunk_size, 4, 1, file);
 
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
@@ -442,25 +430,19 @@ void wave_read_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 
 	for (n = 0; n < pcm->dataLength; n++)
 	{
-		file.read(reinterpret_cast<char*>(&data), sizeof(data));/* 音データ（Lチャンネル）の読み取り */
+		fread(&data, 2, 1, file);/* 音データ（Lチャンネル）の読み取り */
 		pcm->sL[n] = (double)data / 32768.0; /* 音データを-1以上1未満の範囲に正規化する */
 
-		file.read(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データ（Rチャンネル）の読み取り */
+		fread(&data, 2, 1, file);/* 音データ（Rチャンネル）の読み取り */
 		pcm->sR[n] = (double)data / 32768.0; /* 音データを-1以上1未満の範囲に正規化する */
 	}
 
-	file.close();
+	fclose(file);
 }
 
 void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 {
-	ofstream file(file_name, ios::binary); // バイナリモードでファイルを開く
-
-	if (!file.is_open()) {
-		cerr << "Failed to open file: " << file_name << endl;
-		return;
-	}
-
+	FILE* file;
 	char riff_chunk_ID[4];
 	long riff_chunk_size;
 	char file_format_type[4];
@@ -478,6 +460,9 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	double sR;
 	short data;
 	int n;
+	if (fopen_s(&file, file_name, "wb") != 0) {
+		return;
+	}
 
 	riff_chunk_ID[0] = 'R';
 	riff_chunk_ID[1] = 'I';
@@ -507,19 +492,19 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	data_chunk_ID[3] = 'a';
 	data_chunk_size = pcm->dataLength * 4;
 
-	file.write(reinterpret_cast<char*>(riff_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&riff_chunk_size), sizeof(riff_chunk_size));
-	file.write(reinterpret_cast<char*>(file_format_type), 4);
-	file.write(reinterpret_cast<char*>(fmt_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&fmt_chunk_size), sizeof(fmt_chunk_size));
-	file.write(reinterpret_cast<char*>(&wave_format_type), sizeof(wave_format_type));
-	file.write(reinterpret_cast<char*>(&channel), sizeof(channel));
-	file.write(reinterpret_cast<char*>(&samples_per_sec), sizeof(samples_per_sec));
-	file.write(reinterpret_cast<char*>(&bytes_per_sec), sizeof(bytes_per_sec));
-	file.write(reinterpret_cast<char*>(&block_size), sizeof(block_size));
-	file.write(reinterpret_cast<char*>(&bits_per_sample), sizeof(bits_per_sample));
-	file.write(reinterpret_cast<char*>(data_chunk_ID), 4);
-	file.write(reinterpret_cast<char*>(&data_chunk_size), sizeof(data_chunk_size));
+	fwrite(riff_chunk_ID, 1, 4, file);
+	fwrite(&riff_chunk_size, 4, 1, file);
+	fwrite(file_format_type, 1, 4, file);
+	fwrite(fmt_chunk_ID, 1, 4, file);
+	fwrite(&fmt_chunk_size, 4, 1, file);
+	fwrite(&wave_format_type, 2, 1, file);
+	fwrite(&channel, 2, 1, file);
+	fwrite(&samples_per_sec, 4, 1, file);
+	fwrite(&bytes_per_sec, 4, 1, file);
+	fwrite(&block_size, 2, 1, file);
+	fwrite(&bits_per_sample, 2, 1, file);
+	fwrite(data_chunk_ID, 1, 4, file);
+	fwrite(&data_chunk_size, 4, 1, file);
 
 	for (n = 0; n < pcm->dataLength; n++)
 	{
@@ -535,7 +520,7 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 		}
 
 		data = (short)((int)(sL + 0.5) - 32768); /* 四捨五入とオフセットの調節 */
-		file.write(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データ（Lチャンネル）の書き出し */
+		fwrite(&data, 2, 1, file); /* 音データ（Lチャンネル）の書き出し */
 
 		sR = (pcm->sR[n] + 1.0) / 2.0 * 65536.0;
 
@@ -549,10 +534,10 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 		}
 
 		data = (short)((int)(sR + 0.5) - 32768); /* 四捨五入とオフセットの調節 */
-		file.write(reinterpret_cast<char*>(&data), sizeof(data)); /* 音データ（Rチャンネル）の書き出し */
+		fwrite(&data, 2, 1, file); /* 音データ（Rチャンネル）の書き出し */
 	}
 
-	file.close();
+	fclose(file);
 }
 
 void SineWave_Mono(MONO_PCM* pcm, double f0, double a, int ofset, int duration) {
