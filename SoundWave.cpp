@@ -1,7 +1,15 @@
 ﻿#include "SoundWave.h"
 
 void SoundWave::Init(){
-	
+	monoPcm_.fs = 44100;//
+	monoPcm_.bits = 16;
+	monoPcm_.length = monoPcm_.fs * 1;
+	monoPcm_.s = (double*)calloc(monoPcm_.length, sizeof(double));
+
+	f0 = 500;//基本周波数
+
+	CreateWave();//波作成
+	wave_write_16bit_mono(&monoPcm_, "Box.wav");
 
 }
 
@@ -14,7 +22,16 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	
+	//矩形波
+	for (int i = 1; i <= 44; i += 2) {
+		for (int n = 0; n < monoPcm_.length; n++) {
+			monoPcm_.s[n] += 1.0 / i * sin(2 * M_PI * i * f0 * n / monoPcm_.fs);
+		}
+	}
+	gain = 0.1;//ゲイン
+	for (int n = 0; n < monoPcm_.length; n++) {
+		monoPcm_.s[n] *= gain;
+	}
 	
 }
 

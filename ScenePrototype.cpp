@@ -1,6 +1,5 @@
 ﻿#include "ScenePrototype.h"
 
-
 ScenePrototype::ScenePrototype() {
 	
 	soundWave_ = new SoundWave();
