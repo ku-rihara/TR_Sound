@@ -557,5 +557,5 @@ void SineWave_Mono(MONO_PCM* pcm, double f0, double a, int ofset, int duration) 
 	for (n = 0; n < duration; n++) {
 		pcm->s[ofset + n] += s[n];
 	}
-	free(s);
+	
 }
