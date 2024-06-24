@@ -8,7 +8,7 @@ void SoundWave::Init(){
 
 
 	CreateWave();//波作成
-	wave_write_16bit_mono(&monoPcm_, "Box.wav");
+	wave_write_16bit_mono(&monoPcm_, "CDE.wav");
 
 }
 
