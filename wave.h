@@ -18,7 +18,7 @@ const double M_PI = 3.141592653589793;
 {
 	int fs; /* 標本化周波数 */
 	int bits; /* 量子化精度 */
-	int dataLength; /* 音データの長さ */
+	int length; /* 音データの長さ */
 	double* sL; /* 音データ（Lチャンネル） */
 	double* sR; /* 音データ（Rチャンネル） */
 } ;
@@ -48,3 +48,5 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name);
 /// <param name="音の開始位置"></param>
 /// <param name="音を鳴らす時間"></param>
 void SineWave_Mono(MONO_PCM* pcm, double f0, double a, int ofset, int duration);
+
+void SineWave_Stereo(STEREO_PCM* pcm, double f0, double a, int ofset, int duration);
