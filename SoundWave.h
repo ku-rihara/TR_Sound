@@ -7,7 +7,7 @@ public:
 	MONO_PCM monoPcm_;
 	STEREO_PCM stereoPcm_;
 	//int n, i;//
-	double f0, gain;//周波数、
+	double f0, phase, gain;//周波数、位相
 public:
 	void Init();
 	void Update();
