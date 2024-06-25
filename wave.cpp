@@ -562,23 +562,23 @@ void SineWave_Mono(MONO_PCM* pcm, double f0, double a, int ofset, int duration) 
 	
 }
 
-void SineWave_Stereo(STEREO_PCM* pcm, double f0, double a, int ofset, int duration) {
+void SineWave_Stereo(STEREO_PCM* pcm, double f0, double a, double ofset, double duration) {
 	int n;//時間
 	double* s;//音データ
 
-	s = new double[duration];
+	s = new double[int(pcm->fs * duration)];
 	//サイン波
-	for (n = 0; n < duration; n++) {
+	for (n = 0; n < int(pcm->fs * duration); n++) {
 		s[n] = a * sin(2.0f * M_PI * f0 * n / pcm->fs);
 	}
 	//フェード処理
 	for (n = 0; n < pcm->fs * 0.01; n++) {
 		s[n] *= (double)n / (pcm->fs * 0.01);
-		s[duration - n - 1] *= (double)n / (pcm->fs * 0.01);
+		s[int(pcm->fs * duration) - n - 1] *= (double)n / (pcm->fs * 0.01);
 	}
-	for (n = 0; n < duration; n++) {
-		pcm->sL[ofset + n] += s[n];
-		pcm->sR[ofset + n] += s[n];
+	for (n = 0; n < int(pcm->fs * duration); n++) {
+		pcm->sL[int(pcm->fs * ofset) + n] += s[n];
+		pcm->sR[int(pcm->fs * ofset) + n] += s[n];
 	}
 
 }

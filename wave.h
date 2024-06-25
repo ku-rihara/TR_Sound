@@ -49,4 +49,12 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name);
 /// <param name="音を鳴らす時間"></param>
 void SineWave_Mono(MONO_PCM* pcm, double f0, double a, int ofset, int duration);
 
-void SineWave_Stereo(STEREO_PCM* pcm, double f0, double a, int ofset, int duration);
+/// <summary>
+/// サイン波
+/// </summary>
+/// <param name="ステレオPCM"></param>
+/// <param name="周波数"></param>
+/// <param name="振幅"></param>
+/// <param name="音の開始位置"></param>
+/// <param name="音を鳴らす時間"></param>
+void SineWave_Stereo(STEREO_PCM* pcm, double f0, double a, double ofset, double duration);
