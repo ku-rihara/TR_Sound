@@ -18,7 +18,7 @@ const double M_PI = 3.141592653589793;
 {
 	int fs; /* 標本化周波数 */
 	int bits; /* 量子化精度 */
-	int dataLength; /* 音データの長さ */
+	int length; /* 音データの長さ */
 	double* sL; /* 音データ（Lチャンネル） */
 	double* sR; /* 音データ（Rチャンネル） */
 } ;

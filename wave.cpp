@@ -160,12 +160,12 @@ void wave_read_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
-	pcm->dataLength = data_chunk_size / 2; /* 音データの長さ */
-	pcm->sL = new double[pcm->dataLength]; /* メモリの確保 */
-	pcm->sR = new double[pcm->dataLength]; /* メモリの確保 */
+	pcm->length = data_chunk_size / 2; /* 音データの長さ */
+	pcm->sL = new double[pcm->length]; /* メモリの確保 */
+	pcm->sR = new double[pcm->length]; /* メモリの確保 */
 
 	// 音データを読み込む
-	for (n = 0; n < pcm->dataLength; n++)
+	for (n = 0; n < pcm->length; n++)
 	{
 		fread(&data, 2, 1, file); /* 音データ（Lチャンネル）の読み取り */
 		pcm->sL[n] = ((double)data - 128.0) / 128.0; /* 音データを-1以上1未満の範囲に正規化する */
@@ -181,7 +181,7 @@ void wave_write_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 {
 	FILE* file;
 	char riff_chunk_ID[4] = { 'R', 'I', 'F', 'F' };
-	long riff_chunk_size = 36 + pcm->dataLength * 2;
+	long riff_chunk_size = 36 + pcm->length * 2;
 	char file_format_type[4] = { 'W', 'A', 'V', 'E' };
 
 	char fmt_chunk_ID[4] = { 'f', 'm', 't', ' ' };
@@ -194,7 +194,7 @@ void wave_write_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	short bits_per_sample = short(pcm->bits); /* 量子化精度 */
 
 	char data_chunk_ID[4] = { 'd', 'a', 't', 'a' };
-	long data_chunk_size = pcm->dataLength * 2;
+	long data_chunk_size = pcm->length * 2;
 
 	if (fopen_s(&file, file_name, "wb") != 0) {
 		return;
@@ -215,7 +215,7 @@ void wave_write_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	fwrite(&data_chunk_size, 4, 1, file);
 
 	// 音データを書き込む
-	for (int n = 0; n < pcm->dataLength; n++)
+	for (int n = 0; n < pcm->length; n++)
 	{
 		double sL = (pcm->sL[n] + 1.0) / 2.0 * 256.0;
 
@@ -424,11 +424,11 @@ void wave_read_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
-	pcm->dataLength = data_chunk_size / 4; /* 音データの長さ */
-	pcm->sL = new double[pcm->dataLength];
-	pcm->sR = new double[pcm->dataLength];
+	pcm->length = data_chunk_size / 4; /* 音データの長さ */
+	pcm->sL = new double[pcm->length];
+	pcm->sR = new double[pcm->length];
 
-	for (n = 0; n < pcm->dataLength; n++)
+	for (n = 0; n < pcm->length; n++)
 	{
 		fread(&data, 2, 1, file);/* 音データ（Lチャンネル）の読み取り */
 		pcm->sL[n] = (double)data / 32768.0; /* 音データを-1以上1未満の範囲に正規化する */
@@ -468,7 +468,7 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	riff_chunk_ID[1] = 'I';
 	riff_chunk_ID[2] = 'F';
 	riff_chunk_ID[3] = 'F';
-	riff_chunk_size = 36 + pcm->dataLength * 4;
+	riff_chunk_size = 36 + pcm->length * 4;
 	file_format_type[0] = 'W';
 	file_format_type[1] = 'A';
 	file_format_type[2] = 'V';
@@ -490,7 +490,7 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	data_chunk_ID[1] = 'a';
 	data_chunk_ID[2] = 't';
 	data_chunk_ID[3] = 'a';
-	data_chunk_size = pcm->dataLength * 4;
+	data_chunk_size = pcm->length * 4;
 
 	fwrite(riff_chunk_ID, 1, 4, file);
 	fwrite(&riff_chunk_size, 4, 1, file);
@@ -506,7 +506,7 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	fwrite(data_chunk_ID, 1, 4, file);
 	fwrite(&data_chunk_size, 4, 1, file);
 
-	for (n = 0; n < pcm->dataLength; n++)
+	for (n = 0; n < pcm->length; n++)
 	{
 		sL = (pcm->sL[n] + 1.0) / 2.0 * 65536.0;
 

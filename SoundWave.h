@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include<Novice.h>
 #include"wave.h"
+#include "Vector2C.h"
 class SoundWave{
 public:
 	MONO_PCM monoPcm_;
