@@ -1,9 +1,8 @@
 ﻿#pragma once
-#include <iostream>
-#include <fstream>
+
 #include <cmath>
 
-using namespace std;
+
 const double M_PI = 3.141592653589793;
 
  struct MONO_PCM

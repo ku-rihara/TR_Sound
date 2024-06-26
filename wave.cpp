@@ -1,5 +1,7 @@
-﻿#include"wave.h"
-
+﻿#include <iostream>
+#include <fstream>
+#include"wave.h"
+using namespace std;
 
 void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name)
 {

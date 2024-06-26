@@ -1,8 +1,13 @@
 ﻿#include "SoundWave.h"
-#include<vector>
+
 
 void SoundWave::Init(){
 	
+	const int DFTSize = 64;
+	Xreal.resize(DFTSize);
+	Ximage.resize(DFTSize);
+	Wimage.resize(DFTSize);
+	Wreal.resize(DFTSize);
 	CreateWave();//波作成
 	wave_write_16bit_mono(&monoPcm_, "Wavename.wav");
 
@@ -21,6 +26,10 @@ void SoundWave::CreateWave() {
 	
 }
 
+void SoundWave::DFT() {
+
+}
+
 void SoundWave::WaveVisualize() {
 	// 可視化のための座標取得
 	int numPoint = stereoPcm_.length / 60; // 100分割
@@ -34,3 +43,4 @@ void SoundWave::WaveVisualize() {
 		Novice::DrawLine((int)wave[i].x, (int)wave[i].y, (int)wave[i + 1].x, (int)wave[i + 1].y, WHITE);
 	}
 }
+
