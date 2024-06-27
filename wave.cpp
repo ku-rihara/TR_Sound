@@ -43,7 +43,7 @@ void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name)
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size; /* 音データの長さ */
-	pcm->s = new double[pcm->length]; /* メモリの確保 */
+	pcm->s.resize(pcm->length); /* メモリの確保 */
 
 	// 音データを読み込む
 	for (n = 0; n < pcm->length; n++)
@@ -163,8 +163,8 @@ void wave_read_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size / 2; /* 音データの長さ */
-	pcm->sL = new double[pcm->length]; /* メモリの確保 */
-	pcm->sR = new double[pcm->length]; /* メモリの確保 */
+	pcm->sL.resize(pcm->length); /* メモリの確保 */
+	pcm->sR.resize(pcm->length); /* メモリの確保 */
 
 	// 音データを読み込む
 	for (n = 0; n < pcm->length; n++)
@@ -291,7 +291,7 @@ void wave_read_16bit_mono(MONO_PCM* pcm, const char* file_name)
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size / 2; /* 音データの長さ */
-	pcm->s = new double[pcm->length]; /* メモリの確保 */
+	pcm->s.resize(pcm->length); /* メモリの確保 */
 
 	for (n = 0; n < pcm->length; n++)
 	{
@@ -427,8 +427,8 @@ void wave_read_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size / 4; /* 音データの長さ */
-	pcm->sL = new double[pcm->length];
-	pcm->sR = new double[pcm->length];
+	pcm->sL.resize(pcm->length);
+	pcm->sR.resize(pcm->length);
 
 	for (n = 0; n < pcm->length; n++)
 	{

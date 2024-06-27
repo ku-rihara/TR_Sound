@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cmath>
+#include<vector>
 
 
 const double M_PI = 3.141592653589793;
@@ -10,7 +11,7 @@ const double M_PI = 3.141592653589793;
 	int fs; /* 標本化周波数 */
 	int bits; /* 量子化精度 */
 	int length; /* 音データの長さ */
-	double* s; /* 音データ */
+	std::vector<double> s; /* 音データ */
 } ;
 
  struct STEREO_PCM
@@ -18,8 +19,8 @@ const double M_PI = 3.141592653589793;
 	int fs; /* 標本化周波数 */
 	int bits; /* 量子化精度 */
 	int length; /* 音データの長さ */
-	double* sL; /* 音データ（Lチャンネル） */
-	double* sR; /* 音データ（Rチャンネル） */
+	std::vector<double> sL; /* 音データ（Lチャンネル） */
+	std::vector<double> sR; /* 音データ（Rチャンネル） */
 } ;
 
 void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name);
