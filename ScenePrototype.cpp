@@ -16,6 +16,7 @@ void ScenePrototype::Update() {
 }
 
 void ScenePrototype::Draw() {
+	soundWave_->Draw();
 	soundWave_->WaveVisualize();
 
 }

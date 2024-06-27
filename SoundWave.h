@@ -9,8 +9,9 @@ public:
 	STEREO_PCM stereoPcm_;
 	//int n, i;//
 	double f0, gain;//周波数、
-
-	std::vector <double> Xreal,Wreal,Ximage,Wimage,ximage;
+	const int DFTSize = 64;
+	double	Wreal, Wimage;
+	std::vector <double> Xreal,Ximage,ximage, xreal;
 public:
 	void Init();
 	void Update();
