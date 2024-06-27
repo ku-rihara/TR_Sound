@@ -51,7 +51,7 @@ std::vector<std::complex<double>> SoundWave::DFT(const int& DFTsize, const std::
 	for (int k = 0; k < DFTsize; k++) {
 		for (int n = 0; n < DFTsize; n++) {
 			theta = 2.0 * M_PI * k * n / DFTsize;//θ
-			result[k] += x[n] * std::exp(-imag*theta);
+			result[k] += x[n] * std::exp(-imag*theta);//フーリエ変換の公式
 		}
 	}
 	return result;
