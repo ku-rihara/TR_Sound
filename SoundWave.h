@@ -20,7 +20,11 @@ public:
 
 	void CreateWave();
 	void WaveVisualize();
-	std::vector<std::complex<double>> DFT(const int& DFTSize,const std::vector <double>& data);//離散フーリエ変換
+	/// <summary>
+	/// 高速フーリエ変換
+	/// </summary>
+	std::vector<std::complex<double>> FFT(const int& DFTSize, const std::vector <double>& data);
+	std::vector<std::complex<double>> DFT(const int& DFTsize,const std::vector <double>& data);//離散フーリエ変換
 
 };
 
