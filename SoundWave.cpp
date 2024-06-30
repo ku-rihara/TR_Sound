@@ -4,8 +4,9 @@ void SoundWave::Init(){
 	
 	monoPcm_.fs = 44100;/*標本化周波数*/
 	monoPcm_.bits = 16;/*16バイト*/
-	monoPcm_.length = monoPcm_.fs * 4;/*音データの長さ*/
-	monoPcm_.s();
+	monoPcm_.length = int(monoPcm_.fs * 4.0);/*音データの長さ*/
+	monoPcm_.s.resize(monoPcm_.length);/*音データ*/
+	a0.resize(monoPcm_.length);
 	CreateWave();//波作成
 	wave_write_16bit_mono(&monoPcm_, "Wavename.wav");
 
@@ -20,17 +21,27 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	
+	//振幅の時間エンベロープ
+	a0[0] = 0.5;
+	a0[monoPcm_.length - 1] = 0.0;
+	for (int n = 0; n < monoPcm_.length; n++) {
+		a0[n] = a0[0] + ((a0[monoPcm_.length - 1] - a0[0]) * n) / monoPcm_.length - 1;
+	}
+	f0 = 500.0;//周波数
+
+	for (int n = 0; n < monoPcm_.length; n++) {
+		monoPcm_.s[n] = a0[n] * sin(2 * M_PI * f0 * n / monoPcm_.fs);
+	}
 	
 }
 
 void SoundWave::WaveVisualize() {
 	// 可視化のための座標取得
-	int numPoint = stereoPcm_.length / 60; // 100分割
+	int numPoint = monoPcm_.length / 60; // 100分割
 	std::vector <Vector2> wave(numPoint);
 	for (int i = 0; i < numPoint; i++) {
 		wave[i].x = float(i * 1280 / numPoint);
-		wave[i].y = float(360 + stereoPcm_.sL[i * 60] * 300); // Y座標を中央にシフトし、スケーリング
+		wave[i].y = float(360 + monoPcm_.s[i * 60] * 100); // Y座標を中央にシフトし、スケーリング
 	}
 
 	for (int i = 0; i < numPoint - 1; i++) {

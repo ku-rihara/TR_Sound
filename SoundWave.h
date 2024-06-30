@@ -8,8 +8,8 @@ class SoundWave{
 public:
 	MONO_PCM monoPcm_;
 	STEREO_PCM stereoPcm_;
-	//int n, i;//
-	double f0, gain;//周波数、
+	std::vector<double>a0;
+	double f0;//周波数
 public:
 	void Init();
 	void Update();
