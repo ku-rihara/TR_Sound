@@ -1,8 +1,11 @@
 ﻿#include "SoundWave.h"
-#include<vector>
 
 void SoundWave::Init(){
 	
+	monoPcm_.fs = 44100;/*標本化周波数*/
+	monoPcm_.bits = 16;/*16バイト*/
+	monoPcm_.length = monoPcm_.fs * 4;/*音データの長さ*/
+	monoPcm_.s();
 	CreateWave();//波作成
 	wave_write_16bit_mono(&monoPcm_, "Wavename.wav");
 
