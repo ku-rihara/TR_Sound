@@ -6,11 +6,14 @@
 #include<complex>
 class SoundWave{
 public:
-	MONO_PCM monoPcm_;
+	MONO_PCM monoPcm0_;
+	MONO_PCM monoPcm1_;
 	STEREO_PCM stereoPcm_;
-	std::vector<double>f0;
-	std::vector<double>g0;
-	double a0;//周波数
+	int J;
+	double fe, delta;
+	std::vector<double>b_;
+	std::vector<double>w;
+	
 public:
 	void Init();
 	void Update();

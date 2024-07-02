@@ -1,17 +1,17 @@
 ﻿#include "SoundWave.h"
+#include"WindowFunction.h"
+#include"FIR_Filter.h"
 
 void SoundWave::Init(){
 	
-	monoPcm_.fs = 44100;/*標本化周波数*/
-	monoPcm_.bits = 16;/*16バイト*/
-	monoPcm_.length = int(monoPcm_.fs * 4.0);/*音データの長さ*/
-	monoPcm_.s.resize(monoPcm_.length);/*音データ*/
-	//
-	a0 = 0.5;/*振幅*/
-	f0.resize(monoPcm_.length);
-	g0.resize(monoPcm_.length);
+	wave_read_16bit_mono(&monoPcm0_, "sine_500hz_3500hz.wav");
+	monoPcm1_.fs = monoPcm0_.fs;
+	monoPcm1_.bits = monoPcm0_.bits;
+	monoPcm1_.length = monoPcm0_.length;
+	monoPcm1_.s.resize(monoPcm1_.length);
+	
 	CreateWave();//波作成
-	wave_write_16bit_mono(&monoPcm_, "Wavename.wav");
+	wave_write_16bit_mono(&monoPcm1_, "Wavename.wav");
 
 }
 
@@ -24,31 +24,35 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	//周波数の時間エンベロープ
-	f0[0] = 2500;
-	f0[monoPcm_.length - 1] = 1500;
 
-	//f0[n]
-	for (int n = 0; n < monoPcm_.length; n++) {
-		f0[n] = f0[0] + ((f0[monoPcm_.length - 1] - f0[0]) * n) / (monoPcm_.length - 1);
+	fe = 1000.0 / monoPcm0_.fs;//エッジ周波数
+	delta = 1000.0 / monoPcm0_.fs;//遷移帯域幅
+	J = (int)(3.1 / delta + 0.5) - 1;//遅延器の数
+	if (J % 2 == 1) {
+		J++;//J+1が奇数になるようにする
 	}
-	//g0[n]
-	for (int n = 0; n < monoPcm_.length; n++) {
-		g0[n] = (f0[0]*n) + ((f0[monoPcm_.length - 1] - f0[0]) * std::pow(n,2)) / (2.0*(monoPcm_.length - 1));
-	}
-	
-	for (int n = 0; n < monoPcm_.length; n++) {
-		monoPcm_.s[n] = a0 * sin(2 * M_PI * g0[n]  / monoPcm_.fs);
+	w.resize(J + 1);
+	b_.resize(J + 1);
+	w = HanningWindow(J + 1);//ハニング窓
+	b_ = FIR_HPF(fe, J, w);//FIRフィルタの設計
+
+	//フィルタイリング
+	for (int n = 0; n < monoPcm1_.length; n++) {
+		for (int m = 0; m <= J; m++) {
+			if (n - m >= 0) {
+				monoPcm1_.s[n] += b_[m]*monoPcm0_.s[n - m];
+			}
+		}
 	}
 }
 
 void SoundWave::WaveVisualize() {
 	// 可視化のための座標取得
-	int numPoint = monoPcm_.length / 60; // 100分割
+	int numPoint = monoPcm1_.length / 60; // 100分割
 	std::vector <Vector2> wave(numPoint);
 	for (int i = 0; i < numPoint; i++) {
 		wave[i].x = float(i * 1280 / numPoint);
-		wave[i].y = float(360 + monoPcm_.s[i * 60] * 200); // Y座標を中央にシフトし、スケーリング
+		wave[i].y = float(360 + monoPcm1_.s[i * 60] * 200); // Y座標を中央にシフトし、スケーリング
 	}
 
 	for (int i = 0; i < numPoint - 1; i++) {
