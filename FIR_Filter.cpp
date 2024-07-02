@@ -12,6 +12,7 @@ double sinc(const double& x) {
 		result = sin(x) / x;
 	}
 
+
 	return result;
 }
 
