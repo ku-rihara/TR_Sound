@@ -6,7 +6,10 @@ void SoundWave::Init(){
 	monoPcm_.bits = 16;/*16バイト*/
 	monoPcm_.length = int(monoPcm_.fs * 4.0);/*音データの長さ*/
 	monoPcm_.s.resize(monoPcm_.length);/*音データ*/
-	a0.resize(monoPcm_.length);
+	//
+	a0 = 0.5;/*振幅*/
+	f0.resize(monoPcm_.length);
+	g0.resize(monoPcm_.length);
 	CreateWave();//波作成
 	wave_write_16bit_mono(&monoPcm_, "Wavename.wav");
 
@@ -21,18 +24,22 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	//振幅の時間エンベロープ
-	a0[0] = 0.5;
-	a0[monoPcm_.length - 1] = 0.0;
-	for (int n = 0; n < monoPcm_.length; n++) {
-		a0[n] = a0[0] + ((a0[monoPcm_.length - 1] - a0[0]) * n) / monoPcm_.length - 1;
-	}
-	f0 = 500.0;//周波数
+	//周波数の時間エンベロープ
+	f0[0] = 2500;
+	f0[monoPcm_.length - 1] = 1500;
 
+	//f0[n]
 	for (int n = 0; n < monoPcm_.length; n++) {
-		monoPcm_.s[n] = a0[n] * sin(2 * M_PI * f0 * n / monoPcm_.fs);
+		f0[n] = f0[0] + ((f0[monoPcm_.length - 1] - f0[0]) * n) / (monoPcm_.length - 1);
+	}
+	//g0[n]
+	for (int n = 0; n < monoPcm_.length; n++) {
+		g0[n] = (f0[0]*n) + ((f0[monoPcm_.length - 1] - f0[0]) * std::pow(n,2)) / (2.0*(monoPcm_.length - 1));
 	}
 	
+	for (int n = 0; n < monoPcm_.length; n++) {
+		monoPcm_.s[n] = a0 * sin(2 * M_PI * g0[n]  / monoPcm_.fs);
+	}
 }
 
 void SoundWave::WaveVisualize() {
@@ -41,7 +48,7 @@ void SoundWave::WaveVisualize() {
 	std::vector <Vector2> wave(numPoint);
 	for (int i = 0; i < numPoint; i++) {
 		wave[i].x = float(i * 1280 / numPoint);
-		wave[i].y = float(360 + monoPcm_.s[i * 60] * 100); // Y座標を中央にシフトし、スケーリング
+		wave[i].y = float(360 + monoPcm_.s[i * 60] * 200); // Y座標を中央にシフトし、スケーリング
 	}
 
 	for (int i = 0; i < numPoint - 1; i++) {
