@@ -30,8 +30,8 @@ void SoundWave::CreateWave() {
 	if (delayJ % 2 == 1) {
 		delayJ++;//delayJ+1の値を奇数になるようにする
 	}
-	std::vector<double>b;
-	std::vector<double>w;
+	std::vector<double>b(delayJ + 1);
+	std::vector<double>w(delayJ + 1);
 
 	w = HanningWindow(delayJ + 1);/*ハニング窓*/
 	b = FIR_LPF(fe, delayJ, w);/*FIRフィルタの設計*/
@@ -46,21 +46,21 @@ void SoundWave::CreateWave() {
 		int ofset = L * frame;//オフセット
 		/*X(k)*/
 		for (int n = 0; n < N; n++) {
-			x[n] =0;
+			x[n] = 0;
 		}
 		for (int n = 0; n < L; n++) {
 			x[n].real(monoPcm0_.s[ofset + n]);
 		}
-		FFT(x, N,false);//高速フーリエ変換
+		FFT(x, N, false);//高速フーリエ変換
 
 		/*B(k)*/
 		for (int m = 0; m < N; m++) {
 			d[m] = 0;
 		}
-		for (int m = 0; m < delayJ; m++) {
+		for (int m = 0; m <= delayJ; m++) {
 			d[m].real(b[m]);
 		}
-		FFT(d, N,false);//高速フーリエ変換
+		FFT(d, N, false);//高速フーリエ変換
 
 		//フィルタリング
 		for (int k = 0; k < N; k++) {
@@ -69,7 +69,7 @@ void SoundWave::CreateWave() {
 		FFT(y, N, true);
 
 		/*オーバーラップドア*/
-		for (int n = 0; n < L; n++) {
+		for (int n = 0; n < N; n++) {
 			if (ofset + n < monoPcm1_.length) {
 				monoPcm1_.s[ofset + n] += y[n].real();
 			}
@@ -174,6 +174,12 @@ void  SoundWave::FFT(std::vector<std::complex<double>>& x, const int& DFTsize, b
 			d = x[index[k]];
 			x[index[k]] = x[k];
 			x[k] = d;
+		}
+	}
+	/* 計算結果をNで割る */
+	for (int k = 0; k < DFTsize; k++) {
+		if (isReverse) {
+			x[k] /= DFTsize;
 		}
 	}
 }
