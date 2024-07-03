@@ -63,8 +63,7 @@ void SoundWave::IIR_Filtering(const int& I, const int& J, const std::vector <dou
 				monoPcm1_.s[n] += -a[m] * monoPcm1_.s[n - m];
 			}
 		}
-	}
-	
+	}	
 }
 
 //フーリエ変換
