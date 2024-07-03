@@ -121,4 +121,10 @@ void  SoundWave::FFT(std::vector<std::complex<double>>& x, const int& DFTsize, b
 			x[k] = d;
 		}
 	}
+	/* 計算結果をNで割る */
+	for (int k = 0; k < DFTsize; k++) {
+		if (isReverse) {
+			x[k] /= DFTsize;
+		}
+	}
 }
