@@ -1,6 +1,6 @@
 ﻿#include "SoundWave.h"
 #include"WindowFunction.h"
-#include"FIR_Filter.h"
+#include"IIR_Filter.h"
 
 void SoundWave::Init(){
 	
@@ -25,25 +25,15 @@ void SoundWave::Draw() {
 
 void SoundWave::CreateWave() {
 
-	fe = 1000.0 / monoPcm0_.fs;//エッジ周波数
-	delta = 1000.0 / monoPcm0_.fs;//遷移帯域幅
-	J = (int)(3.1 / delta + 0.5) - 1;//遅延器の数
-	if (J % 2 == 1) {
-		J++;//J+1が奇数になるようにする
-	}
-	w.resize(J + 1);
-	b_.resize(J + 1);
-	w = HanningWindow(J + 1);//ハニング窓
-	b_ = FIR_HPF(fe, J, w);//FIRフィルタの設計
+	double cutoffFrequency =1000.0/monoPcm0_.fs;/*遮断周波数*/
+	double Q = 1.0 / std::sqrt(2.0);/*クオリティファクタ*/
+	int DelayI = 2;/*遅延器の数*/
+	int DelayJ = 2;/*遅延器の数*/
+	std::vector<double>a(3);
+	std::vector<double>b(3);
+	IIR_LPF(cutoffFrequency, Q, a, b);
+	IIR_Filtering(DelayI, DelayJ, a, b);
 
-	//フィルタイリング
-	for (int n = 0; n < monoPcm1_.length; n++) {
-		for (int m = 0; m <= J; m++) {
-			if (n - m >= 0) {
-				monoPcm1_.s[n] += b_[m]*monoPcm0_.s[n - m];
-			}
-		}
-	}
 }
 
 void SoundWave::WaveVisualize() {
@@ -58,6 +48,23 @@ void SoundWave::WaveVisualize() {
 	for (int i = 0; i < numPoint - 1; i++) {
 		Novice::DrawLine((int)wave[i].x, (int)wave[i].y, (int)wave[i + 1].x, (int)wave[i + 1].y, WHITE);
 	}
+}
+
+void SoundWave::IIR_Filtering(const int& I, const int& J, const std::vector <double>& a, const std::vector <double>& b) {
+	//フィルタリング
+	for (int n = 0; n < monoPcm1_.length; n++) {
+		for (int m = 0; m <= J; m++) {
+			if (n - m >= 0) {
+				monoPcm1_.s[n] += b[m] * monoPcm0_.s[n - m];
+			}
+		}
+		for (int m = 1; m <= I; m++) {
+			if (n - m >= 0) {
+				monoPcm1_.s[n] += -a[m] * monoPcm1_.s[n - m];
+			}
+		}
+	}
+	
 }
 
 //フーリエ変換
