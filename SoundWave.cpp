@@ -60,22 +60,17 @@ std::vector<std::complex<double>> SoundWave::DFT(const int& DFTsize, const std::
 }
 
 
-std::vector<std::complex<double>> SoundWave::FFT(const int& DFTsize, const std::vector <double>& data) {
+void  SoundWave::FFT(std::vector<std::complex<double>>& x, const int& DFTsize, bool isReverse) {
 
 	int FFTStage = int(std::log2(DFTsize));/*FFTの段階()*/
 
-	std::vector<std::complex<double>>x(DFTsize, {});
 	std::complex<double>imag(0, 1);// 虚数単位
 	//値の格納用
 	std::complex<double>a{};
 	std::complex<double>b{};
 	std::complex<double>c{};
 	std::complex<double>d{};
-	//読み込んだデータのコピー
-	for (int n = 0; n < DFTsize; n++) {
-		x[n].real(data[n]);//実数部
-		x[n].imag(0.0);//虚数部
-	}
+	////読み込んだデータのコピー
 
 	//バタフライ演算
 	for (int stage = 1; stage <= FFTStage; stage++) {//FFTの段階
@@ -94,7 +89,12 @@ std::vector<std::complex<double>> SoundWave::FFT(const int& DFTsize, const std::
 				//演算内容を書く
 				if (stage < FFTStage) {
 					x[n] = a + b;
-					x[m] = (a - b) * std::exp(-imag * theta);
+					if (isReverse) {
+						x[m] = (a - b) * std::exp(imag * theta);
+					}
+					else {
+						x[m] = (a - b) * std::exp(-imag * theta);
+					}
 				}
 				else {//最後の段階では足し算と引き算になる
 					x[n] = a + b;
@@ -121,5 +121,4 @@ std::vector<std::complex<double>> SoundWave::FFT(const int& DFTsize, const std::
 			x[k] = d;
 		}
 	}
-	return x;
 }
