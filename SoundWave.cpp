@@ -1,15 +1,16 @@
 ﻿#include "SoundWave.h"
 #include"WindowFunction.h"
 #include"IIR_Filter.h"
+#include"FIR_Filter.h"
 
-void SoundWave::Init(){
-	
+void SoundWave::Init() {
+
 	wave_read_16bit_mono(&monoPcm0_, "sine_500hz_3500hz.wav");
 	monoPcm1_.fs = monoPcm0_.fs;
 	monoPcm1_.bits = monoPcm0_.bits;
 	monoPcm1_.length = monoPcm0_.length;
 	monoPcm1_.s.resize(monoPcm1_.length);
-	
+
 	CreateWave();//波作成
 	wave_write_16bit_mono(&monoPcm1_, "Wavename.wav");
 }
@@ -23,16 +24,31 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
+	double fe = 1000.0 / monoPcm0_.fs;/*エッジ周波数*/
+	double delta = 1000.0 / monoPcm0_.fs;/*遷移帯域幅*/
+	int delayJ = (int)(3.1 / delta + 0.5) - 1;/*遅延器の数*/
+	if (delayJ % 2 == 1) {
+		delayJ++;//delayJ+1の値を奇数になるようにする
+	}
+	std::vector<double>b;
+	std::vector<double>w;
 
-	double cutoffFrequency =1000.0/monoPcm0_.fs;/*遮断周波数*/
-	double Q = 1.0 / std::sqrt(2.0);/*クオリティファクタ*/
-	int DelayI = 2;/*遅延器の数*/
-	int DelayJ = 2;/*遅延器の数*/
-	std::vector<double>a(3);
-	std::vector<double>b(3);
-	IIR_LPF(cutoffFrequency, Q, a, b);
-	IIR_Filtering(monoPcm0_.s,monoPcm1_.s,a,b,monoPcm1_.length,DelayI,DelayJ);
-
+	w = HanningWindow(delayJ + 1);/*ハニング窓*/
+	b = FIR_LPF(fe, delayJ, w);/*FIRフィルタの設計*/
+	int L = 128;/*フレームの長さ*/
+	int N = 256;/*DFTのサイズ*/
+	std::vector<std::complex<double>>x(N);
+	std::vector<std::complex<double>>y(N);
+	std::vector<std::complex<double>>b(N);
+	int numberOfFrame = monoPcm0_.length / L;/*フレームの数*/
+	for (int frame = 0; frame < numberOfFrame; frame++) {
+		int ofset = L * frame;//オフセット
+		/*X(k)*/
+		for (int n = 0; n < L; n++) {
+			x[n].real(monoPcm0_.s[ofset + n]);
+		}
+		FFT()
+	}
 }
 
 void SoundWave::WaveVisualize() {
