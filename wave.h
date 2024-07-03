@@ -1,27 +1,27 @@
 ﻿#pragma once
-#include <iostream>
-#include <fstream>
-#include <cmath>
 
-using namespace std;
+#include <cmath>
+#include<vector>
+
+
 const double M_PI = 3.141592653589793;
 
- struct MONO_PCM
+struct MONO_PCM
 {
 	int fs; /* 標本化周波数 */
 	int bits; /* 量子化精度 */
 	int length; /* 音データの長さ */
-	double* s; /* 音データ */
-} ;
+	std::vector<double> s; /* 音データ */
+};
 
- struct STEREO_PCM
+struct STEREO_PCM
 {
 	int fs; /* 標本化周波数 */
 	int bits; /* 量子化精度 */
 	int length; /* 音データの長さ */
-	double* sL; /* 音データ（Lチャンネル） */
-	double* sR; /* 音データ（Rチャンネル） */
-} ;
+	std::vector<double> sL; /* 音データ（Lチャンネル） */
+	std::vector<double> sR; /* 音データ（Rチャンネル） */
+};
 
 void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name);
 
@@ -48,3 +48,4 @@ void wave_write_16bit_stereo(STEREO_PCM* pcm, const char* file_name);
 /// <param name="音の開始位置"></param>
 /// <param name="音を鳴らす時間"></param>
 void SineWave_Mono(MONO_PCM* pcm, double f0, double a, int ofset, int duration);
+

@@ -23,6 +23,9 @@
     <Filter Include="Scene">
       <UniqueIdentifier>{8e6b82a6-f592-46b9-a31c-a184916566d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Function">
+      <UniqueIdentifier>{dd0846cc-8e95-460c-ac91-a4a2ef5da093}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp">
@@ -53,9 +56,6 @@
     <ClCompile Include="SoundWave.cpp">
       <Filter>KamataEngine\.cpp</Filter>
     </ClCompile>
-    <ClCompile Include="wave.cpp">
-      <Filter>KamataEngine\.cpp</Filter>
-    </ClCompile>
     <ClCompile Include="Vector2C.cpp">
       <Filter>KamataEngine\.cpp</Filter>
     </ClCompile>
@@ -70,6 +70,15 @@
     </ClCompile>
     <ClCompile Include="ScenePrototype.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="wave.cpp">
+      <Filter>Function</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowFunction.cpp">
+      <Filter>Function</Filter>
+    </ClCompile>
+    <ClCompile Include="FIR_Filter.cpp">
+      <Filter>KamataEngine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -153,9 +162,6 @@
     <ClInclude Include="BaseObj.h">
       <Filter>.h</Filter>
     </ClInclude>
-    <ClInclude Include="wave.h">
-      <Filter>.h</Filter>
-    </ClInclude>
     <ClInclude Include="Matrix3x3.h">
       <Filter>.h</Filter>
     </ClInclude>
@@ -168,5 +174,12 @@
     <ClInclude Include="ScenePrototype.h">
       <Filter>Scene</Filter>
     </ClInclude>
+    <ClInclude Include="wave.h">
+      <Filter>Function</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowFunction.h">
+      <Filter>Function</Filter>
+    </ClInclude>
+    <ClInclude Include="FIR_Filter.h" />
   </ItemGroup>
 </Project>

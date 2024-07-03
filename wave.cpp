@@ -1,5 +1,7 @@
-﻿#include"wave.h"
-
+﻿#include <iostream>
+#include <fstream>
+#include"wave.h"
+using namespace std;
 
 void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name)
 {
@@ -37,11 +39,11 @@ void wave_read_8bit_mono(MONO_PCM* pcm, const char* file_name)
 	fread(&bits_per_sample, 2, 1, file);
 	fread(data_chunk_ID, 1, 4, file);
 	fread(&data_chunk_size, 4, 1, file);
-	
+
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size; /* 音データの長さ */
-	pcm->s = new double[pcm->length]; /* メモリの確保 */
+	pcm->s.resize(pcm->length); /* メモリの確保 */
 
 	// 音データを読み込む
 	for (n = 0; n < pcm->length; n++)
@@ -161,8 +163,8 @@ void wave_read_8bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size / 2; /* 音データの長さ */
-	pcm->sL = new double[pcm->length]; /* メモリの確保 */
-	pcm->sR = new double[pcm->length]; /* メモリの確保 */
+	pcm->sL.resize(pcm->length); /* メモリの確保 */
+	pcm->sR.resize(pcm->length); /* メモリの確保 */
 
 	// 音データを読み込む
 	for (n = 0; n < pcm->length; n++)
@@ -289,7 +291,7 @@ void wave_read_16bit_mono(MONO_PCM* pcm, const char* file_name)
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size / 2; /* 音データの長さ */
-	pcm->s = new double[pcm->length]; /* メモリの確保 */
+	pcm->s.resize(pcm->length); /* メモリの確保 */
 
 	for (n = 0; n < pcm->length; n++)
 	{
@@ -425,8 +427,8 @@ void wave_read_16bit_stereo(STEREO_PCM* pcm, const char* file_name)
 	pcm->fs = samples_per_sec; /* 標本化周波数 */
 	pcm->bits = bits_per_sample; /* 量子化精度 */
 	pcm->length = data_chunk_size / 4; /* 音データの長さ */
-	pcm->sL = new double[pcm->length];
-	pcm->sR = new double[pcm->length];
+	pcm->sL.resize(pcm->length);
+	pcm->sR.resize(pcm->length);
 
 	for (n = 0; n < pcm->length; n++)
 	{
@@ -546,7 +548,7 @@ void SineWave_Mono(MONO_PCM* pcm, double f0, double a, int ofset, int duration) 
 
 	s = new double[duration];
 	//サイン波
-	for ( n = 0; n < duration; n++) {
+	for (n = 0; n < duration; n++) {
 		s[n] = a * sin(2.0f * M_PI * f0 * n / pcm->fs);
 	}
 	//フェード処理
@@ -559,3 +561,4 @@ void SineWave_Mono(MONO_PCM* pcm, double f0, double a, int ofset, int duration) 
 	}
 	free(s);
 }
+
