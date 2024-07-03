@@ -64,7 +64,15 @@ void SoundWave::CreateWave() {
 
 		//フィルタリング
 		for (int k = 0; k < N; k++) {
+			y[k] = x[k] * d[k];
+		}
+		FFT(y, N, true);
 
+		/*オーバーラップドア*/
+		for (int n = 0; n < L; n++) {
+			if (ofset + n < monoPcm1_.length) {
+				monoPcm1_.s[ofset + n] += y[n].real();
+			}
 		}
 	}
 }
