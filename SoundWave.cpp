@@ -5,14 +5,7 @@
 
 void SoundWave::Init() {
 
-	wave_read_16bit_mono(&monoPcm0_, "sine_500hz_3500hz.wav");
-	monoPcm1_.fs = monoPcm0_.fs;
-	monoPcm1_.bits = monoPcm0_.bits;
-	monoPcm1_.length = monoPcm0_.length;
-	monoPcm1_.s.resize(monoPcm1_.length);
-
-	CreateWave();//波作成
-	wave_write_16bit_mono(&monoPcm1_, "Wavename.wav");
+	
 }
 
 void SoundWave::Update() {
@@ -24,57 +17,7 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	double fe = 1000.0 / monoPcm0_.fs;/*エッジ周波数*/
-	double delta = 1000.0 / monoPcm0_.fs;/*遷移帯域幅*/
-	int delayJ = (int)(3.1 / delta + 0.5) - 1;/*遅延器の数*/
-	if (delayJ % 2 == 1) {
-		delayJ++;//delayJ+1の値を奇数になるようにする
-	}
-	std::vector<double>b(delayJ + 1);
-	std::vector<double>w(delayJ + 1);
-
-	w = HanningWindow(delayJ + 1);/*ハニング窓*/
-	b = FIR_LPF(fe, delayJ, w);/*FIRフィルタの設計*/
-	int L = 128;/*フレームの長さ*/
-	int N = 256;/*DFTのサイズ*/
-	std::vector<std::complex<double>>x(N);
-	std::vector<std::complex<double>>y(N);
-	std::vector<std::complex<double>>d(N);
-	int numberOfFrame = monoPcm0_.length / L;/*フレームの数*/
-
-	for (int frame = 0; frame < numberOfFrame; frame++) {
-		int ofset = L * frame;//オフセット
-		/*X(k)*/
-		for (int n = 0; n < N; n++) {
-			x[n] = 0;
-		}
-		for (int n = 0; n < L; n++) {
-			x[n].real(monoPcm0_.s[ofset + n]);
-		}
-		FFT(x, N, false);//高速フーリエ変換
-
-		/*B(k)*/
-		for (int m = 0; m < N; m++) {
-			d[m] = 0;
-		}
-		for (int m = 0; m <= delayJ; m++) {
-			d[m].real(b[m]);
-		}
-		FFT(d, N, false);//高速フーリエ変換
-
-		//フィルタリング
-		for (int k = 0; k < N; k++) {
-			y[k] = x[k] * d[k];
-		}
-		FFT(y, N, true);
-
-		/*オーバーラップドア*/
-		for (int n = 0; n < N; n++) {
-			if (ofset + n < monoPcm1_.length) {
-				monoPcm1_.s[ofset + n] += y[n].real();
-			}
-		}
-	}
+	
 }
 
 void SoundWave::WaveVisualize() {
