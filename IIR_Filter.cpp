@@ -38,3 +38,20 @@ void IIR_BPF(const double& fcLow, const double& fcHight,std::vector<double>& a, 
 
 	a[0]=1.0;
 }
+
+
+void IIR_Filtering(const std::vector <double>& originalS, std::vector <double>& filterS, const std::vector <double>& a, const std::vector <double>& b, const int& Lenght, const int& I, const int& J) {
+	//フィルタリング
+	for (int n = 0; n < Lenght; n++) {
+		for (int m = 0; m <= J; m++) {
+			if (n - m >= 0) {
+				filterS[n] += b[m] * originalS[n - m];
+			}
+		}
+		for (int m = 1; m <= I; m++) {
+			if (n - m >= 0) {
+				filterS[n] += -a[m] * filterS[n - m];
+			}
+		}
+	}
+}

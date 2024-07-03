@@ -18,7 +18,7 @@ public:
 
 	void CreateWave();
 	void WaveVisualize();
-	void IIR_Filtering(const int& I,const int&J, const std::vector <double>&a, const std::vector <double>&b);
+	
 	std::vector<std::complex<double>> DFT(const int& DFTsize, const std::vector <double>& data);
 	std::vector<std::complex<double>> FFT(const int& DFTsize, const std::vector <double>& data);
 };

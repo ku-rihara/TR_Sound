@@ -31,3 +31,16 @@ void IIR_HPF(const double& fc, const double& Q, std::vector<double>& a, std::vec
 /// <param name="b"></param>///
 /// <returns></returns>
 void IIR_BPF(const double& fcLow, const double& fcHight, std::vector<double>& a, std::vector<double>& b);
+
+//// <summary>/// 
+/// 
+/// </summary>/// 
+/// <param name="元の音データ"></param>/// 
+/// <param name="フィルタリングする音データ"></param>/// 
+/// <param name=""></param>///
+/// <param name=""></param>///
+///  <param name="音データの長さ"></param>///
+///  <param name="遅延器の数I"></param>///
+///   <param name="遅延器の数J"></param>///
+/// <returns></returns>
+void IIR_Filtering(const std::vector <double>& originalS, std::vector <double>& filterS, const std::vector <double>& a, const std::vector <double>& b, const int& Lenght, const int& I, const int& J);

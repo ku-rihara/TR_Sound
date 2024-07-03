@@ -12,7 +12,6 @@ void SoundWave::Init(){
 	
 	CreateWave();//波作成
 	wave_write_16bit_mono(&monoPcm1_, "Wavename.wav");
-
 }
 
 void SoundWave::Update() {
@@ -32,7 +31,7 @@ void SoundWave::CreateWave() {
 	std::vector<double>a(3);
 	std::vector<double>b(3);
 	IIR_LPF(cutoffFrequency, Q, a, b);
-	IIR_Filtering(DelayI, DelayJ, a, b);
+	IIR_Filtering(monoPcm0_.s,monoPcm1_.s,a,b,monoPcm1_.length,DelayI,DelayJ);
 
 }
 
@@ -48,22 +47,6 @@ void SoundWave::WaveVisualize() {
 	for (int i = 0; i < numPoint - 1; i++) {
 		Novice::DrawLine((int)wave[i].x, (int)wave[i].y, (int)wave[i + 1].x, (int)wave[i + 1].y, WHITE);
 	}
-}
-
-void SoundWave::IIR_Filtering(const int& I, const int& J, const std::vector <double>& a, const std::vector <double>& b) {
-	//フィルタリング
-	for (int n = 0; n < monoPcm1_.length; n++) {
-		for (int m = 0; m <= J; m++) {
-			if (n - m >= 0) {
-				monoPcm1_.s[n] += b[m] * monoPcm0_.s[n - m];
-			}
-		}
-		for (int m = 1; m <= I; m++) {
-			if (n - m >= 0) {
-				monoPcm1_.s[n] += -a[m] * monoPcm1_.s[n - m];
-			}
-		}
-	}	
 }
 
 //フーリエ変換
