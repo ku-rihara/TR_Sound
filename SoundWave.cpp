@@ -39,15 +39,33 @@ void SoundWave::CreateWave() {
 	int N = 256;/*DFTのサイズ*/
 	std::vector<std::complex<double>>x(N);
 	std::vector<std::complex<double>>y(N);
-	std::vector<std::complex<double>>b(N);
+	std::vector<std::complex<double>>d(N);
 	int numberOfFrame = monoPcm0_.length / L;/*フレームの数*/
+
 	for (int frame = 0; frame < numberOfFrame; frame++) {
 		int ofset = L * frame;//オフセット
 		/*X(k)*/
+		for (int n = 0; n < N; n++) {
+			x[n] =0;
+		}
 		for (int n = 0; n < L; n++) {
 			x[n].real(monoPcm0_.s[ofset + n]);
 		}
-		FFT()
+		FFT(x, N,false);//高速フーリエ変換
+
+		/*B(k)*/
+		for (int m = 0; m < N; m++) {
+			d[m] = 0;
+		}
+		for (int m = 0; m < delayJ; m++) {
+			d[m].real(b[m]);
+		}
+		FFT(d, N,false);//高速フーリエ変換
+
+		//フィルタリング
+		for (int k = 0; k < N; k++) {
+
+		}
 	}
 }
 
@@ -79,7 +97,6 @@ std::vector<std::complex<double>> SoundWave::DFT(const int& DFTsize, const std::
 		x[n].imag(0.0);//x(n)の虚数部	
 	}
 
-
 	for (int k = 0; k < DFTsize; k++) {
 		for (int n = 0; n < DFTsize; n++) {
 			theta = 2.0 * M_PI * k * n / DFTsize;//θ
@@ -90,22 +107,17 @@ std::vector<std::complex<double>> SoundWave::DFT(const int& DFTsize, const std::
 }
 
 
-std::vector<std::complex<double>> SoundWave::FFT(const int& DFTsize, const std::vector <double>& data) {
+void  SoundWave::FFT(std::vector<std::complex<double>>& x, const int& DFTsize, bool isReverse) {
 
 	int FFTStage = int(std::log2(DFTsize));/*FFTの段階()*/
 
-	std::vector<std::complex<double>>x(DFTsize, {});
 	std::complex<double>imag(0, 1);// 虚数単位
 	//値の格納用
 	std::complex<double>a{};
 	std::complex<double>b{};
 	std::complex<double>c{};
 	std::complex<double>d{};
-	//読み込んだデータのコピー
-	for (int n = 0; n < DFTsize; n++) {
-		x[n].real(data[n]);//実数部
-		x[n].imag(0.0);//虚数部
-	}
+	////読み込んだデータのコピー
 
 	//バタフライ演算
 	for (int stage = 1; stage <= FFTStage; stage++) {//FFTの段階
@@ -124,7 +136,12 @@ std::vector<std::complex<double>> SoundWave::FFT(const int& DFTsize, const std::
 				//演算内容を書く
 				if (stage < FFTStage) {
 					x[n] = a + b;
-					x[m] = (a - b) * std::exp(-imag * theta);
+					if (isReverse) {
+						x[m] = (a - b) * std::exp(imag * theta);
+					}
+					else {
+						x[m] = (a - b) * std::exp(-imag * theta);
+					}
 				}
 				else {//最後の段階では足し算と引き算になる
 					x[n] = a + b;
@@ -151,5 +168,4 @@ std::vector<std::complex<double>> SoundWave::FFT(const int& DFTsize, const std::
 			x[k] = d;
 		}
 	}
-	return x;
 }
