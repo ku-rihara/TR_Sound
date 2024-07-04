@@ -1,14 +1,14 @@
 ﻿#include "SoundWave.h"
 #include"WindowFunction.h"
 #include"IIR_Filter.h"
-
+#include<map>
 
 void SoundWave::Init() {
 
-	wave_read_16bit_mono(&originalpcm_, "pulse_train.wav");
-	pcm1_.fs = originalpcm_.fs;
-	pcm1_.bits = originalpcm_.bits;
-	pcm1_.length = originalpcm_.length;
+	
+	pcm1_.fs = 44100;
+	pcm1_.bits =16;
+	pcm1_.length = int(pcm1_.fs*4.0);
 	pcm1_.s.resize(pcm1_.length);
 
 	CreateWave();//波作成
@@ -24,58 +24,8 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	std::vector<double>a(3);/**/
-	std::vector<double>b(3);/**/
-
-	std::vector<double>s(pcm1_.length);
-	double F1 = 500.0;/*F1の周波数*/
-	double F2 = 800.0;/*F2の周波数*/
-	double F3 = 2500.0;/*F3の周波数*/
-	double F4 = 3500.0;/*F4の周波数*/
-
-	double B1 = 100.0;/*F1の帯域幅*/
-	double B2 = 100.0;/*F2の帯域幅*/
-	double B3 = 100.0;/*F3の帯域幅*/
-	double B4 = 100.0;/*F4の帯域幅*/
-
-	int delayJ = 2;/*遅延器の数*/
-	int delayI = 2;/*遅延器の数*/
-
-	IIR_resonator(F1 / originalpcm_.fs, F1 / B1, a, b);/*IIRフィルタ設計*/
-	IIR_Filtering(originalpcm_.s, s, originalpcm_.length, a, b, delayI, delayJ);/*フィルタリング*/
-	for (int n = 0; n < pcm1_.length; n++) {
-		pcm1_.s[n] += s[n];
-		s[n] = 0.0;
-	}
-
-	IIR_resonator(F2 / originalpcm_.fs, F2 / B2, a, b);/*IIRフィルタ設計*/
-	IIR_Filtering(originalpcm_.s, s, originalpcm_.length, a, b, delayI, delayJ);/*フィルタリング*/
-	for (int n = 0; n < pcm1_.length; n++) {
-		pcm1_.s[n] += s[n];
-		s[n] = 0.0;
-	}
-
-	IIR_resonator(F3 / originalpcm_.fs, F3 / B3, a, b);/*IIRフィルタ設計*/
-	IIR_Filtering(originalpcm_.s, s, originalpcm_.length, a, b, delayI, delayJ);/*フィルタリング*/
-	for (int n = 0; n < pcm1_.length; n++) {
-		pcm1_.s[n] += s[n];
-		s[n] = 0.0;
-	}
-
-	IIR_resonator(F4 / originalpcm_.fs, F4 / B4, a, b);/*IIRフィルタ設計*/
-	IIR_Filtering(originalpcm_.s, s, originalpcm_.length, a, b, delayI, delayJ);/*フィルタリング*/
-	for (int n = 0; n < pcm1_.length; n++) {
-		pcm1_.s[n] += s[n];
-		s[n] = 0.0;
-	}
-	/*ディエンファシス*/
-	s[0] = pcm1_.s[0];
-	for (int n = 1; n < pcm1_.length; n++) {
-		s[n] = pcm1_.s[n] + 0.98 * s[n - 1];
-	}
-	for (int n = 0; n < pcm1_.length; n++) {
-		pcm1_.s[n] = s[n];
-	}
+	std::string text = "aio"; // 発話したいテキスト
+	create_speech_wave_with_noise( text);
 }
 
 void SoundWave::WaveVisualize() {
@@ -185,26 +135,72 @@ void  SoundWave::FFT(std::vector<std::complex<double>>& x, const int& DFTsize, b
 	}
 }
 
-void SoundWave::IIR_FilteringSegment(const std::vector<double>& input, std::vector<double>& output, int start, int end, const std::vector<double>& a, const std::vector<double>& b, int delayI, int delayJ) {
-	// Implement IIR filtering for a segment of the input
-	std::vector<double> x(delayI + 1, 0.0);
-	std::vector<double> y(delayJ + 1, 0.0);
 
-	for (int n = start; n < end; n++) {
-		x[0] = input[n];
-		y[0] = 0.0;
-		for (int i = 0; i < delayI + 1; i++) {
-			y[0] += b[i] * x[i];
+void SoundWave::generate_noise_wave(MONO_PCM* monoPcm_, double f0) {
+	double phase;
+	for (int i = 1; i <= 22050; i++) {
+		phase = (double)rand() / RAND_MAX * 2.0 * M_PI;
+		for (int n = 0; n < monoPcm_->length; n++) {
+			monoPcm_->s[n] += sin(2.0 * M_PI * i * f0 * n / monoPcm_->fs + phase);
 		}
-		for (int j = 1; j < delayJ + 1; j++) {
-			y[0] -= a[j] * y[j];
+	}
+
+	double gain = 0.001; // ゲイン
+	for (int n = 0; n < monoPcm_->length; n++) {
+		monoPcm_->s[n] *= gain;
+	}
+}
+
+void SoundWave::generate_formant_noise_wave(MONO_PCM* monoPcm_, double frequency, double bandwidth, double f0) {
+	generate_noise_wave(monoPcm_, f0); // ノイズ生成
+
+	std::vector<double> a(3), b(3);
+	IIR_resonator(frequency / monoPcm_->fs, frequency / bandwidth, a, b);
+
+	std::vector<double> filterS(monoPcm_->length, 0.0);
+	IIR_Filtering(monoPcm_->s, filterS, monoPcm_->length, a, b, 2, 2);
+
+	for (int n = 0; n < monoPcm_->length; n++) {
+		monoPcm_->s[n] = filterS[n];
+	}
+}
+
+
+void SoundWave::create_speech_wave_with_noise( const std::string& text) {
+	std::map<char, std::pair<double, double>> formant_map;
+	formant_map['a'] = { 800.0, 100.0 };  // あ
+	formant_map['i'] = { 1500.0, 100.0 }; // い
+	formant_map['u'] = { 1200.0, 100.0 }; // う
+	formant_map['e'] = { 2000.0, 100.0 }; // え
+	formant_map['o'] = { 700.0, 100.0 };  // お
+
+	double f0 = 100.0; // 基本周波数
+	int length =pcm1_.length;
+	MONO_PCM monoPcm_;
+	monoPcm_.fs = pcm1_.fs;
+	monoPcm_.bits = pcm1_.bits;
+	monoPcm_.length = length;
+	monoPcm_.s.resize(length);
+
+	for (char c : text) {
+		if (formant_map.find(c) != formant_map.end()) {
+			double frequency = formant_map[c].first;
+			double bandwidth = formant_map[c].second;
+			generate_formant_noise_wave(&monoPcm_, frequency, bandwidth, f0);
+			for (int n = 0; n < length; ++n) {
+				pcm1_.s[n] += monoPcm_.s[n];
+				monoPcm_.s[n] = 0.0;
+			}
 		}
-		for (int i = delayI; i > 0; i--) {
-			x[i] = x[i - 1];
-		}
-		for (int j = delayJ; j > 0; j--) {
-			y[j] = y[j - 1];
-		}
-		output[n] = y[0];
+	}
+
+	// ディエンファシス
+	std::vector<double> s(length, 0.0);
+	s[0] = pcm1_.s[0];
+	for (int n = 1; n < length; n++) {
+		s[n] = pcm1_.s[n] + 0.98 * s[n - 1];
+	}
+	for (int n = 0; n < length; n++) {
+		pcm1_.s[n] = s[n];
 	}
 }

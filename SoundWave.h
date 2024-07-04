@@ -35,8 +35,10 @@ public:
 	void CreateWave();
 	void WaveVisualize();
 
-	void IIR_FilteringSegment(const std::vector<double>& input, std::vector<double>& output, int start, int end, const std::vector<double>& a, const std::vector<double>& b, int delayI, int delayJ);
-	
+	void generate_noise_wave(MONO_PCM* monoPcm_, double f0);
+	void generate_formant_noise_wave(MONO_PCM* monoPcm_, double frequency, double bandwidth, double f0);
+	void create_speech_wave_with_noise(const std::string& text);
+
 	std::vector<std::complex<double>> DFT(const int& DFTsize, const std::vector <double>& data);
 	void  FFT(std::vector<std::complex<double>>& x, const int& DFTsize,bool isReverse);
 };
