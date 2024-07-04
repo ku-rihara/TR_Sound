@@ -1,11 +1,11 @@
 ﻿#include "SoundWave.h"
 #include"WindowFunction.h"
 #include"IIR_Filter.h"
-#include"FIR_Filter.h"
+
 
 void SoundWave::Init() {
 
-	wave_read_16bit_mono(&monoPcm0_, "sine_500hz_3500hz.wav");
+	wave_read_16bit_mono(&monoPcm0_, "pulse_train.wav");
 	monoPcm1_.fs = monoPcm0_.fs;
 	monoPcm1_.bits = monoPcm0_.bits;
 	monoPcm1_.length = monoPcm0_.length;
@@ -24,59 +24,38 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
+	std::vector<double>a(3);
+	std::vector<double>b(3);
+	std::vector<double>cutoffFreq(monoPcm0_.length);//遮断周波数
+	double Q = 1.0 / std::sqrt(2.0);
+	int delayJ = 2;/*遅延器の数*/
+	int delayI = 2;/*遅延器の数*/
 
+	/*LPFの遮断周波数*/
+	for (int n = 0; n < monoPcm0_.length; n++) {
+		cutoffFreq[n] = 10000.0 * std::exp(-5.0 * n / monoPcm0_.length);
 
-	int DFTSize = 256;/*DFTのサイズ*/
-	std::vector<double>buffer(DFTSize);
-	std::vector<double>window(DFTSize);
-	std::vector<std::complex<double>>inputSignal(DFTSize);
-	std::vector<std::complex<double>>outputSignal(DFTSize);
-	std::vector<std::complex<double>>filter(DFTSize);
+	}
+	for (int n = 0; n < monoPcm1_.length; n++)
+	{
+		IIR_LPF(cutoffFreq[n]/monoPcm1_.fs,Q,a,b); /* IIRフィルタの設計 */
 
-	
-	window = HanningWindow(DFTSize);/*ハニング窓*/
-	
-
-	int numberOfFrame = (monoPcm0_.length - DFTSize / 2) / (DFTSize / 2); /* フレームの数 */
-
-	for (int frame = 0; frame < numberOfFrame; frame++) {
-		int offset = DFTSize / 2 * frame;//オフセット
-		/*X(k)*/
-		for (int n = 0; n < DFTSize; n++) {
-			inputSignal[n].real(monoPcm0_.s[offset+n]*window[n]);
-			inputSignal[n].imag(0.0);
+		for (int m = 0; m <= delayJ; m++)
+		{
+			if (n - m >= 0)
+			{
+				monoPcm1_.s[n] += b[m] * monoPcm0_.s[n - m];
+			}
 		}
-		
-		FFT(inputSignal, DFTSize, false);//高速フーリエ変換
-		double edgeFrequency = 1000.0 / monoPcm0_.fs;/*エッジ周波数*/
-		edgeFrequency *= DFTSize;
-		/*B(k)*/
-		for (int frequencyIndex = 0; frequencyIndex <= edgeFrequency; frequencyIndex++) {
-			filter[frequencyIndex].real(1.0);
-			filter[frequencyIndex].imag(0.0);
-		}
-		for (int frequencyIndex = int(edgeFrequency + 1); frequencyIndex <= DFTSize / 2; frequencyIndex++) {
-			filter[frequencyIndex].real(0.0);
-			filter[frequencyIndex].imag(0.0);
-		}
-		for (int frequencyIndex = 1; frequencyIndex < DFTSize / 2; frequencyIndex++) {
-			filter[DFTSize-frequencyIndex].real(filter[frequencyIndex].real());
-			filter[DFTSize-frequencyIndex].imag(-filter[frequencyIndex].imag());
-		}
-		
-		//フィルタリング
-		for (int frequencyIndex = 0; frequencyIndex < DFTSize; frequencyIndex++) {
-			outputSignal[frequencyIndex] = inputSignal[frequencyIndex] * filter[frequencyIndex];
-		}
-		FFT(outputSignal, DFTSize, true);
-
-		/*オーバーラップドア*/
-		for (int sampleIndex = 0; sampleIndex < DFTSize; sampleIndex++) {
-			
-				monoPcm1_.s[offset + sampleIndex] += outputSignal[sampleIndex].real();
-			
+		for (int m = 1; m <= delayI; m++)
+		{
+			if (n - m >= 0)
+			{
+				monoPcm1_.s[n] += -a[m] * monoPcm1_.s[n - m];
+			}
 		}
 	}
+
 }
 
 void SoundWave::WaveVisualize() {
