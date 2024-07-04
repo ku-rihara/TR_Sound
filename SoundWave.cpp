@@ -62,11 +62,11 @@ void SoundWave::WaveVisualize() {
 	// 可視化のための座標取得
 	int numPoint = monoPcm1_.length / 60; // 100分割
 	std::vector <Vector2> wave(numPoint);
+	int screenHeight = 720; // 画面の高さ（仮に720ピクセルとします）
 	for (int i = 0; i < numPoint; i++) {
 		wave[i].x = float(i * 1280 / numPoint);
-		wave[i].y = float(360 + monoPcm1_.s[i * 60] * 200); // Y座標を中央にシフトし、スケーリング
+		wave[i].y = float(screenHeight / 2 - monoPcm1_.s[i * 60] * 200); // Y座標を中央にシフトし、スケーリングし、上下反転
 	}
-
 	for (int i = 0; i < numPoint - 1; i++) {
 		Novice::DrawLine((int)wave[i].x, (int)wave[i].y, (int)wave[i + 1].x, (int)wave[i + 1].y, WHITE);
 	}
