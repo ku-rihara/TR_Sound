@@ -10,8 +10,8 @@ void SoundWave::Init() {
 	stereoPcm1_.bits = stereoPcm0_.bits;
 	stereoPcm1_.length = stereoPcm0_.length;
 
-	stereoPcm1_.sL.resize(stereoPcm0_.length);
-	stereoPcm1_.sR.resize(stereoPcm0_.length);
+	stereoPcm1_.sL.resize(stereoPcm1_.length);
+	stereoPcm1_.sR.resize(stereoPcm1_.length);
 
 	CreateWave();//波作成
 	wave_write_16bit_stereo(&stereoPcm1_, "Wavename.wav");
@@ -46,16 +46,16 @@ void SoundWave::CreateWave() {
 		{
 			if (n - m >= 0)
 			{
-				stereoPcm1_.sL[n] += a[m] * stereoPcm0_.sL[n - m];
-				stereoPcm1_.sR[n] += a[m] * stereoPcm0_.sR[n - m];
+				stereoPcm1_.sL[n] += b[m] * stereoPcm0_.sL[n - m];
+				stereoPcm1_.sR[n] += b[m] * stereoPcm0_.sR[n - m];
 			}
 		}
 		for (int m = 1; m <= delayI; m++)
 		{
 			if (n - m >= 0)
 			{
-				stereoPcm1_.sL[n] += -b[m] * stereoPcm1_.sL[n - m];
-				stereoPcm1_.sR[n] += -b[m] * stereoPcm1_.sR[n - m];
+				stereoPcm1_.sL[n] += -a[m] * stereoPcm1_.sL[n - m];
+				stereoPcm1_.sR[n] += -a[m] * stereoPcm1_.sR[n - m];
 			}
 		}
 	}
