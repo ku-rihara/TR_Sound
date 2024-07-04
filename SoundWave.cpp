@@ -7,8 +7,8 @@
 
 void SoundWave::Init() {
 	pcm1_.fs = 44100;
-	pcm1_.bits =16;
-	pcm1_.length = int(pcm1_.fs*4.0);
+	pcm1_.bits = 16;
+	pcm1_.length = int(pcm1_.fs * 4.0);
 	pcm1_.s.resize(pcm1_.length);
 
 	noizePcm_.fs = 44100;
@@ -173,15 +173,18 @@ void SoundWave::generate_formant_noise_wave(MONO_PCM* monoPcm_, double frequency
 
 
 void SoundWave::create_speech_wave_with_noise( const std::string& text) {
-	std::map<char, std::pair<double, double>> formant_map;
-	formant_map['a'] = { 800.0, 100.0 };  // あ
-	formant_map['i'] = { 1500.0, 100.0 }; // い
-	formant_map['u'] = { 1200.0, 100.0 }; // う
-	formant_map['e'] = { 2000.0, 100.0 }; // え
-	formant_map['o'] = { 700.0, 100.0 };  // お
+	
+	double duration_per_char = 1.0; // 各文字の発話時間（秒）
+	double fade_factor = 0.98; // ディエンファシスの減衰率
+
+	int total_length = int(pcm1_.fs * duration_per_char * text.size()); // 合計の長さを計算
+	pcm1_.length = total_length;
+	pcm1_.s.resize(total_length, 0.0);
+
+	int current_position = 0; // 現在の位置を管理する変数
 
 	double f0 = 100.0; // 基本周波数
-	int length =pcm1_.length;
+	int length = int(pcm1_.length/text.size());
 	MONO_PCM monoPcm_;
 	monoPcm_.fs = pcm1_.fs;
 	monoPcm_.bits = pcm1_.bits;
@@ -189,24 +192,32 @@ void SoundWave::create_speech_wave_with_noise( const std::string& text) {
 	monoPcm_.s.resize(length);
 
 	for (char c : text) {
+		std::map<char, std::pair<double, double>> formant_map;
+		formant_map['a'] = { 800.0, 100.0 };  // あ
+		formant_map['i'] = { 1500.0, 100.0 }; // い
+		formant_map['u'] = { 1200.0, 100.0 }; // う
+		formant_map['e'] = { 2000.0, 100.0 }; // え
+		formant_map['o'] = { 700.0, 100.0 };  // お
+
+
 		if (formant_map.find(c) != formant_map.end()) {
 			double frequency = formant_map[c].first;
 			double bandwidth = formant_map[c].second;
 			generate_formant_noise_wave(&monoPcm_, frequency, bandwidth, f0);
-			for (int n = 0; n < length; ++n) {
-				pcm1_.s[n] += monoPcm_.s[n];
-				monoPcm_.s[n] = 0.0;
-			}
-		}
-	}
 
-	// ディエンファシス
-	std::vector<double> s(length, 0.0);
-	s[0] = pcm1_.s[0];
-	for (int n = 1; n < length; n++) {
-		s[n] = pcm1_.s[n] + 0.98 * s[n - 1];
-	}
-	for (int n = 0; n < length; n++) {
-		pcm1_.s[n] = s[n];
+			// ディエンファシス
+			std::vector<double> s(length, 0.0);
+			s[0] = monoPcm_.s[0];
+			for (int n = 1; n < length; n++) {
+				s[n] = monoPcm_.s[n] + fade_factor * s[n - 1];
+			}
+
+			// pcm1_ の適切な位置に波形をコピー
+			for (int n = 0; n < length; ++n) {
+				pcm1_.s[current_position + n] += s[n];
+			}
+
+			current_position += length; // 次の文字の位置を設定
+		}
 	}
 }
