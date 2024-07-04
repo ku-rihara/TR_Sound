@@ -23,6 +23,7 @@ struct VowelParams {
 class SoundWave{
 public:
 	MONO_PCM originalpcm_;
+	MONO_PCM noizePcm_;
 	MONO_PCM pcm1_;
 	STEREO_PCM stereoPcm_;
 	
@@ -35,7 +36,7 @@ public:
 	void CreateWave();
 	void WaveVisualize();
 
-	void generate_noise_wave(MONO_PCM* monoPcm_, double f0);
+	void generate_noise_wave( double f0);
 	void generate_formant_noise_wave(MONO_PCM* monoPcm_, double frequency, double bandwidth, double f0);
 	void create_speech_wave_with_noise(const std::string& text);
 

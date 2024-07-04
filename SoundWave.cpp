@@ -3,14 +3,19 @@
 #include"IIR_Filter.h"
 #include<map>
 #include <string>
+#include<random>
 
 void SoundWave::Init() {
-
-	
 	pcm1_.fs = 44100;
 	pcm1_.bits =16;
 	pcm1_.length = int(pcm1_.fs*4.0);
 	pcm1_.s.resize(pcm1_.length);
+
+	noizePcm_.fs = 44100;
+	noizePcm_.bits = 16;
+	noizePcm_.length = int(pcm1_.fs * 4.0);
+	noizePcm_.s.resize(noizePcm_.length);
+	generate_noise_wave(100);
 
 	CreateWave();//波作成
 	wave_write_16bit_mono(&pcm1_, "Wavename.wav");
@@ -137,33 +142,33 @@ void  SoundWave::FFT(std::vector<std::complex<double>>& x, const int& DFTsize, b
 }
 
 
-void SoundWave::generate_noise_wave(MONO_PCM* monoPcm_, double f0) {
+void SoundWave::generate_noise_wave( double f0) {
+	
 	double phase;
-	for (int i = 1; i <= 2200; i++) {
+	for (int i = 1; i <= 120; i++) {
 		phase = (double)rand() / RAND_MAX * 2.0 * M_PI;
-		for (int n = 0; n < monoPcm_->length; n++) {
-			monoPcm_->s[n] += sin(2.0 * M_PI * i * f0 * n / monoPcm_->fs + phase);
+		for (int n = 0; n < noizePcm_.length; n++) {
+			noizePcm_.s[n] += sin(2.0 * M_PI * i * f0 * n / noizePcm_.fs + phase);
 		}
 	}
 
 	double gain = 0.001; // ゲイン
-	for (int n = 0; n < monoPcm_->length; n++) {
-		monoPcm_->s[n] *= gain;
+	for (int n = 0; n < noizePcm_.length; n++) {
+		noizePcm_.s[n] *= gain;
 	}
 }
 
 void SoundWave::generate_formant_noise_wave(MONO_PCM* monoPcm_, double frequency, double bandwidth, double f0) {
-	generate_noise_wave(monoPcm_, f0); // ノイズ生成
-
 	std::vector<double> a(3), b(3);
 	IIR_resonator(frequency / monoPcm_->fs, frequency / bandwidth, a, b);
 
 	std::vector<double> filterS(monoPcm_->length, 0.0);
-	IIR_Filtering(monoPcm_->s, filterS, monoPcm_->length, a, b, 2, 2);
+	IIR_Filtering(noizePcm_.s, filterS, monoPcm_->length, a, b, 2, 2); // noizePcm_ を使用してフィルタリング
 
 	for (int n = 0; n < monoPcm_->length; n++) {
 		monoPcm_->s[n] = filterS[n];
 	}
+	f0;
 }
 
 
