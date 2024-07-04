@@ -37,6 +37,7 @@ public:
 	void WaveVisualize();
 
 	void generate_noise_wave( double f0);
+	void generate_formant_noise_wave2(std::vector<double>* consonant_noise, double frequency, double bandwidth, double f0);
 	void generate_formant_noise_wave(MONO_PCM* monoPcm_, double frequency, double bandwidth, double f0);
 	void create_speech_wave_with_noise(const std::string& text);
 

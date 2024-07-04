@@ -30,7 +30,7 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	std::string text = "aio"; // 発話したいテキスト
+	std::string text = "aeiueoa"; // 発話したいテキスト
 	create_speech_wave_with_noise( text);
 }
 
@@ -172,9 +172,11 @@ void SoundWave::generate_formant_noise_wave(MONO_PCM* monoPcm_, double frequency
 }
 
 
+
+
 void SoundWave::create_speech_wave_with_noise( const std::string& text) {
 	
-	double duration_per_char = 1.0; // 各文字の発話時間（秒）
+	double duration_per_char = 0.3; // 各文字の発話時間（秒）
 	double fade_factor = 0.98; // ディエンファシスの減衰率
 
 	int total_length = int(pcm1_.fs * duration_per_char * text.size()); // 合計の長さを計算
