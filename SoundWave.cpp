@@ -24,55 +24,57 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	double fe = 1000.0 / monoPcm0_.fs;/*エッジ周波数*/
-	double delta = 1000.0 / monoPcm0_.fs;/*遷移帯域幅*/
-	int delayJ = (int)(3.1 / delta + 0.5) - 1;/*遅延器の数*/
-	if (delayJ % 2 == 1) {
-		delayJ++;//delayJ+1の値を奇数になるようにする
-	}
-	std::vector<double>b(delayJ + 1);
-	std::vector<double>w(delayJ + 1);
 
-	w = HanningWindow(delayJ + 1);/*ハニング窓*/
-	b = FIR_LPF(fe, delayJ, w);/*FIRフィルタの設計*/
-	int L = 128;/*フレームの長さ*/
-	int N = 256;/*DFTのサイズ*/
-	std::vector<std::complex<double>>x(N);
-	std::vector<std::complex<double>>y(N);
-	std::vector<std::complex<double>>d(N);
-	int numberOfFrame = monoPcm0_.length / L;/*フレームの数*/
+
+	int DFTSize = 256;/*DFTのサイズ*/
+	std::vector<double>buffer(DFTSize);
+	std::vector<double>window(DFTSize);
+	std::vector<std::complex<double>>inputSignal(DFTSize);
+	std::vector<std::complex<double>>outputSignal(DFTSize);
+	std::vector<std::complex<double>>filter(DFTSize);
+
+	
+	window = HanningWindow(DFTSize);/*ハニング窓*/
+	
+
+	int numberOfFrame = (monoPcm0_.length - DFTSize / 2) / (DFTSize / 2); /* フレームの数 */
 
 	for (int frame = 0; frame < numberOfFrame; frame++) {
-		int ofset = L * frame;//オフセット
+		int offset = DFTSize / 2 * frame;//オフセット
 		/*X(k)*/
-		for (int n = 0; n < N; n++) {
-			x[n] = 0;
+		for (int n = 0; n < DFTSize; n++) {
+			inputSignal[n].real(monoPcm0_.s[offset+n]*window[n]);
+			inputSignal[n].imag(0.0);
 		}
-		for (int n = 0; n < L; n++) {
-			x[n].real(monoPcm0_.s[ofset + n]);
-		}
-		FFT(x, N, false);//高速フーリエ変換
-
+		
+		FFT(inputSignal, DFTSize, false);//高速フーリエ変換
+		double edgeFrequency = 1000.0 / monoPcm0_.fs;/*エッジ周波数*/
+		edgeFrequency *= DFTSize;
 		/*B(k)*/
-		for (int m = 0; m < N; m++) {
-			d[m] = 0;
+		for (int frequencyIndex = 0; frequencyIndex <= edgeFrequency; frequencyIndex++) {
+			filter[frequencyIndex].real(1.0);
+			filter[frequencyIndex].imag(0.0);
 		}
-		for (int m = 0; m <= delayJ; m++) {
-			d[m].real(b[m]);
+		for (int frequencyIndex = int(edgeFrequency + 1); frequencyIndex <= DFTSize / 2; frequencyIndex++) {
+			filter[frequencyIndex].real(0.0);
+			filter[frequencyIndex].imag(0.0);
 		}
-		FFT(d, N, false);//高速フーリエ変換
-
+		for (int frequencyIndex = 1; frequencyIndex < DFTSize / 2; frequencyIndex++) {
+			filter[DFTSize-frequencyIndex].real(filter[frequencyIndex].real());
+			filter[DFTSize-frequencyIndex].imag(-filter[frequencyIndex].imag());
+		}
+		
 		//フィルタリング
-		for (int k = 0; k < N; k++) {
-			y[k] = x[k] * d[k];
+		for (int frequencyIndex = 0; frequencyIndex < DFTSize; frequencyIndex++) {
+			outputSignal[frequencyIndex] = inputSignal[frequencyIndex] * filter[frequencyIndex];
 		}
-		FFT(y, N, true);
+		FFT(outputSignal, DFTSize, true);
 
 		/*オーバーラップドア*/
-		for (int n = 0; n < N; n++) {
-			if (ofset + n < monoPcm1_.length) {
-				monoPcm1_.s[ofset + n] += y[n].real();
-			}
+		for (int sampleIndex = 0; sampleIndex < DFTSize; sampleIndex++) {
+			
+				monoPcm1_.s[offset + sampleIndex] += outputSignal[sampleIndex].real();
+			
 		}
 	}
 }
