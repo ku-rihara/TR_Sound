@@ -2,6 +2,7 @@
 #include"WindowFunction.h"
 #include"IIR_Filter.h"
 #include<map>
+#include <string>
 
 void SoundWave::Init() {
 
@@ -138,7 +139,7 @@ void  SoundWave::FFT(std::vector<std::complex<double>>& x, const int& DFTsize, b
 
 void SoundWave::generate_noise_wave(MONO_PCM* monoPcm_, double f0) {
 	double phase;
-	for (int i = 1; i <= 22050; i++) {
+	for (int i = 1; i <= 2200; i++) {
 		phase = (double)rand() / RAND_MAX * 2.0 * M_PI;
 		for (int n = 0; n < monoPcm_->length; n++) {
 			monoPcm_->s[n] += sin(2.0 * M_PI * i * f0 * n / monoPcm_->fs + phase);
