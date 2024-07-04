@@ -41,8 +41,20 @@ void IIR_BPF(const double& fcLow, const double& fcHight,std::vector<double>& a, 
 	a[0]=1.0;
 }
 
+void IIR_resonator(const double& fc, const double& Q, std::vector<double>& a, std::vector<double>& b) {
+	const double analogFrequency = tan(M_PI * fc) / (2.0 * M_PI);//アナログ遮断周波数
 
-void IIR_Filtering(const std::vector <double>& originalS, std::vector <double>& filterS, const std::vector <double>& a, const std::vector <double>& b, const int& Lenght, const int& I, const int& J) {
+	a[0] = 1.0 + 2.0 * M_PI * analogFrequency / Q + 4.0 * std::pow(M_PI, 2) * std::pow(analogFrequency, 2);
+	a[1] = (8.0 * std::pow(M_PI, 2) * std::pow(analogFrequency, 2) - 2.0) / a[0];
+	a[2] = (1.0 - 2.0 * M_PI * analogFrequency / Q + 4.0 * std::pow(M_PI, 2) * std::pow(analogFrequency, 2)) / a[0];
+	b[0] = 2.0 * M_PI * analogFrequency / Q / a[0];
+	b[1] = 0.0;
+	b[2] = -2.0 * M_PI * analogFrequency / Q / a[0];
+
+	a[0] = 0.0;
+}
+
+void IIR_Filtering(const std::vector <double>& originalS, std::vector <double>& filterS, const int& Lenght, const std::vector <double>& a, const std::vector <double>& b, const int& I, const int& J) {
 	//フィルタリング
 	for (int n = 0; n < Lenght; n++) {
 		for (int m = 0; m <= J; m++) {
