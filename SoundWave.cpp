@@ -5,14 +5,16 @@
 
 void SoundWave::Init() {
 
-	wave_read_16bit_mono(&monoPcm0_, "pulse_train.wav");
-	monoPcm1_.fs = monoPcm0_.fs;
-	monoPcm1_.bits = monoPcm0_.bits;
-	monoPcm1_.length = monoPcm0_.length;
-	monoPcm1_.s.resize(monoPcm1_.length);
+	wave_read_16bit_stereo(&stereoPcm0_, "pulse_train.wav");
+	stereoPcm1_.fs = stereoPcm0_.fs;
+	stereoPcm1_.bits = stereoPcm0_.bits;
+	stereoPcm1_.length = stereoPcm0_.length;
+
+	stereoPcm1_.sL.resize(stereoPcm0_.length);
+	stereoPcm1_.sR.resize(stereoPcm0_.length);
 
 	CreateWave();//波作成
-	wave_write_16bit_mono(&monoPcm1_, "Wavename.wav");
+	wave_write_16bit_stereo(&stereoPcm1_, "Wavename.wav");
 }
 
 void SoundWave::Update() {
@@ -26,32 +28,34 @@ void SoundWave::Draw() {
 void SoundWave::CreateWave() {
 	std::vector<double>a(3);
 	std::vector<double>b(3);
-	std::vector<double>cutoffFreq(monoPcm0_.length);//遮断周波数
+	std::vector<double>cutoffFreq(stereoPcm0_.length);//遮断周波数
 	double Q = 1.0 / std::sqrt(2.0);
 	int delayJ = 2;/*遅延器の数*/
 	int delayI = 2;/*遅延器の数*/
 
 	/*LPFの遮断周波数*/
-	for (int n = 0; n < monoPcm0_.length; n++) {
-		cutoffFreq[n] = 10000.0 * std::exp(-5.0 * n / monoPcm0_.length);
+	for (int n = 0; n < stereoPcm0_.length; n++) {
+		cutoffFreq[n] = 10000.0 * std::exp(-5.0 * n / stereoPcm0_.length);
 
 	}
-	for (int n = 0; n < monoPcm1_.length; n++)
+	for (int n = 0; n < stereoPcm1_.length; n++)
 	{
-		IIR_LPF(cutoffFreq[n]/monoPcm1_.fs,Q,a,b); /* IIRフィルタの設計 */
+		IIR_LPF(cutoffFreq[n]/stereoPcm1_.fs,Q,a,b); /* IIRフィルタの設計 */
 
 		for (int m = 0; m <= delayJ; m++)
 		{
 			if (n - m >= 0)
 			{
-				monoPcm1_.s[n] += b[m] * monoPcm0_.s[n - m];
+				stereoPcm1_.sL[n] += a[m] * stereoPcm0_.sL[n - m];
+				stereoPcm1_.sR[n] += a[m] * stereoPcm0_.sR[n - m];
 			}
 		}
 		for (int m = 1; m <= delayI; m++)
 		{
 			if (n - m >= 0)
 			{
-				monoPcm1_.s[n] += -a[m] * monoPcm1_.s[n - m];
+				stereoPcm1_.sL[n] += -b[m] * stereoPcm1_.sL[n - m];
+				stereoPcm1_.sR[n] += -b[m] * stereoPcm1_.sR[n - m];
 			}
 		}
 	}
@@ -60,15 +64,21 @@ void SoundWave::CreateWave() {
 
 void SoundWave::WaveVisualize() {
 	// 可視化のための座標取得
-	int numPoint = monoPcm1_.length / 60; // 100分割
+	int numPoint = stereoPcm1_.length / 60; // 100分割
 	std::vector <Vector2> wave(numPoint);
+	std::vector <Vector2> wave2(numPoint);
 	for (int i = 0; i < numPoint; i++) {
 		wave[i].x = float(i * 1280 / numPoint);
-		wave[i].y = float(360 + monoPcm1_.s[i * 60] * 200); // Y座標を中央にシフトし、スケーリング
+		wave[i].y = float(360 + stereoPcm1_.sR[i * 60] * 200); // Y座標を中央にシフトし、スケーリング
+		wave2[i].x = float(i * 1280 / numPoint);
+		wave2[i].y = float(360 + stereoPcm1_.sL[i * 60] * 200); // Y座標を中央にシフトし、スケーリング
+
 	}
 
 	for (int i = 0; i < numPoint - 1; i++) {
 		Novice::DrawLine((int)wave[i].x, (int)wave[i].y, (int)wave[i + 1].x, (int)wave[i + 1].y, WHITE);
+		Novice::DrawLine((int)wave2[i].x, (int)wave2[i].y, (int)wave2[i + 1].x, (int)wave2[i + 1].y, RED);
+
 	}
 }
 

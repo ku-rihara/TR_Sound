@@ -6,9 +6,8 @@
 #include<complex>
 class SoundWave{
 public:
-	MONO_PCM monoPcm0_;
-	MONO_PCM monoPcm1_;
-	STEREO_PCM stereoPcm_;
+	STEREO_PCM stereoPcm0_;
+	STEREO_PCM stereoPcm1_;
 	
 	
 public:
