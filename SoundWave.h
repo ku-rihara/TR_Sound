@@ -14,7 +14,6 @@ struct Sound {
 class SoundWave {
 public:
 	STEREO_PCM originalpcm_;
-	STEREO_PCM noizePcm_;
 	STEREO_PCM pcm1_;
 
 	double pronunciationTime_ = 0.5;//発音時間
@@ -30,7 +29,7 @@ public:
 	void WaveVisualize();
 
 	void CreateOriginalWave(double f0);
-	void WaveFilter(STEREO_PCM* monoPcm_, const double& frequency, const double& bandwidth, const double& f0);
+	void WaveFilter(STEREO_PCM& monoPcm_, const std::vector <double>& frequency, const double& bandwidth, const double& f0);
 	void CreateSpeechVoice(STEREO_PCM& mosnoPcm, const std::string& text);
 
 };
