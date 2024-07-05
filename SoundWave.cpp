@@ -4,6 +4,7 @@
 #include<map>
 #include <string>
 #include<random>
+
 #include"InputManager.h"
 const int SampleFs = 44100;
 void SoundWave::Init() {
@@ -117,7 +118,7 @@ void SoundWave::WaveFilter(STEREO_PCM& stereoPcm, const std::vector <double>& fr
 	const int delayJ = 2;
 	std::vector<double> filterSR(stereoPcm.length, 0.0);
 	std::vector<double> filterSL(stereoPcm.length, 0.0);
-
+	
 	IIR_resonator(frequency[0] / originalpcm_.fs, frequency[0] / bandwidth, aR, bR);/*IIRフィルタ設計*/
 	IIR_resonator(frequency[0] / originalpcm_.fs, frequency[0] / bandwidth, aL, bL);/*IIRフィルタ設計*/
 	IIR_Filtering(originalpcm_.sR, filterSR, originalpcm_.length, aR, bR, delayI, delayJ);/*フィルタリング*/
