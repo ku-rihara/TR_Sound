@@ -11,7 +11,12 @@ void SoundWave::Init() {
 	pcm1_.fs = SampleFs;
 	pcm1_.bits = 16;
 	
-	CreateOriginalWave(200);
+	originalpcm_.fs = SampleFs;
+	originalpcm_.bits = 16;
+	originalpcm_.length = int(originalpcm_.fs);
+	originalpcm_.sR.resize(originalpcm_.length);
+	originalpcm_.sL.resize(originalpcm_.length);
+	CreateOriginalWave(50);
 
 	CreateWave();//波作成
 	wave_write_16bit_stereo(&pcm1_, "Wavename.wav");
@@ -28,15 +33,17 @@ void SoundWave::Update() {
 }
 
 void SoundWave::Draw() { 
-
+	
 	if (voice_.isStart) {
 		Novice::PlayAudio(voice_.handle, false, 0.7f);
 		voice_.isStart = false;
 	}
+	Novice::DrawBox(0, 0, 1280, 720, 0, BLACK, kFillModeSolid);
 }
 
 void SoundWave::CreateWave() {
-	std::string text = "ooo"; // 発話したいテキスト
+	std::string text = "aiueo"; // 発話したいテキスト
+	
 	CreateSpeechVoice(pcm1_,text);
 }
 
@@ -67,7 +74,7 @@ void SoundWave::CreateOriginalWave( double f0) {
 	double tau = 0.9;  // 声門開大期
 	double tan2 = 0.05;  // 声門閉大期
 	double fs = originalpcm_.fs;
-	double gain = 0.1; // ゲイン
+	double gain = 0.2; // ゲイン
 
 	for (int n = 0; n < originalpcm_.length; ++n) {
 		double phase = t * f0;
@@ -93,72 +100,38 @@ void SoundWave::CreateOriginalWave( double f0) {
 	}
 }
 
-void SoundWave::WaveFilter(STEREO_PCM& stereoPcm, const std::vector <double>& frequency, const double& bandwidth, const double& f0) {
-	//フィルター
+void SoundWave::WaveFilter(STEREO_PCM& stereoPcm, const std::vector <double>& frequency, const double& bandwidth) {
 	std::vector<double> aR(3), bR(3);
 	std::vector<double> aL(3), bL(3);
 	const int delayI = 2;
 	const int delayJ = 2;
 	std::vector<double> filterSR(stereoPcm.length, 0.0);
 	std::vector<double> filterSL(stereoPcm.length, 0.0);
-	
-	IIR_resonator(frequency[0] / originalpcm_.fs, frequency[0] / bandwidth, aR, bR);/*IIRフィルタ設計*/
-	IIR_resonator(frequency[0] / originalpcm_.fs, frequency[0] / bandwidth, aL, bL);/*IIRフィルタ設計*/
-	IIR_Filtering(originalpcm_.sR, filterSR, stereoPcm.length, aR, bR, delayI, delayJ);/*フィルタリング*/
-	IIR_Filtering(originalpcm_.sL, filterSL, stereoPcm.length, aL, bL, delayI, delayJ);/*フィルタリング*/
-	for (int n = 0; n < stereoPcm.length; n++) {
-		stereoPcm.sR[n] += filterSR[n];
-		stereoPcm.sL[n] += filterSL[n];
+	for (int n = 0; n < stereoPcm.length; ++n) {
+		stereoPcm.sR[n] = 0;
+		stereoPcm.sL[n] = 0;
 		filterSR[n] = 0.0;
 		filterSL[n] = 0.0;
 	}
+	for (size_t i = 0; i < frequency.size(); ++i) {
+		double fcLow = frequency[i] - bandwidth / 2.0;
+		double fcHight = frequency[i] + bandwidth / 2.0;
 
-	IIR_resonator(frequency[1] / originalpcm_.fs, frequency[1] / bandwidth, aR, bR);/*IIRフィルタ設計*/
-	IIR_resonator(frequency[1] / originalpcm_.fs, frequency[1] / bandwidth, aL, bL);/*IIRフィルタ設計*/
-	IIR_Filtering(originalpcm_.sR, filterSR, stereoPcm.length, aR, bR, delayI, delayJ);/*フィルタリング*/
-	IIR_Filtering(originalpcm_.sL, filterSL, stereoPcm.length, aL, bL, delayI, delayJ);/*フィルタリング*/
-	for (int n = 0; n < stereoPcm.length; n++) {
-		stereoPcm.sR[n] += filterSR[n];
-		stereoPcm.sL[n] += filterSL[n];
-		filterSR[n] = 0.0;
-		filterSL[n] = 0.0;
+		IIR_BPF(fcLow / originalpcm_.fs, fcHight / originalpcm_.fs, aR, bR); // IIRバンドパスフィルタ設計
+		IIR_BPF(fcLow / originalpcm_.fs, fcHight / originalpcm_.fs, aL, bL); // IIRバンドパスフィルタ設計
+
+		IIR_Filtering(originalpcm_.sR, filterSR, stereoPcm.length, aR, bR, delayI, delayJ); // フィルタリング
+		IIR_Filtering(originalpcm_.sL, filterSL, stereoPcm.length, aL, bL, delayI, delayJ); // フィルタリング
+
+		for (int n = 0; n < stereoPcm.length; ++n) {
+			stereoPcm.sR[ n] += filterSR[n];
+			stereoPcm.sL[n] += filterSL[n];
+			filterSR[n] = 0.0;
+			filterSL[n] = 0.0;
+		}
 	}
 
-	IIR_resonator(frequency[2] / originalpcm_.fs, frequency[2] / bandwidth, aR, bR);/*IIRフィルタ設計*/
-	IIR_resonator(frequency[2] / originalpcm_.fs, frequency[2] / bandwidth, aL, bL);/*IIRフィルタ設計*/
-	IIR_Filtering(originalpcm_.sR, filterSR, stereoPcm.length, aR, bR, delayI, delayJ);/*フィルタリング*/
-	IIR_Filtering(originalpcm_.sL, filterSL, stereoPcm.length, aL, bL, delayI, delayJ);/*フィルタリング*/
-	for (int n = 0; n < stereoPcm.length; n++) {
-		stereoPcm.sR[n] += filterSR[n];
-		stereoPcm.sL[n] += filterSL[n];
-		filterSR[n] = 0.0;
-		filterSL[n] = 0.0;
-	}
 
-	IIR_resonator(frequency[3] / originalpcm_.fs, frequency[3] / bandwidth, aR, bR);/*IIRフィルタ設計*/
-	IIR_resonator(frequency[3] / originalpcm_.fs, frequency[3] / bandwidth, aL, bL);/*IIRフィルタ設計*/
-	IIR_Filtering(originalpcm_.sR, filterSR, stereoPcm.length, aR, bR, delayI, delayJ);/*フィルタリング*/
-	IIR_Filtering(originalpcm_.sL, filterSL, stereoPcm.length, aL, bL, delayI, delayJ);/*フィルタリング*/
-	for (int n = 0; n < stereoPcm.length; n++) {
-		stereoPcm.sR[n] += filterSR[n];
-		stereoPcm.sL[n] += filterSL[n];
-		filterSR[n] = 0.0;
-		filterSL[n] = 0.0;
-	}
-	f0;
-	//IIR_resonator(frequency / monoPcm_->fs, frequency / bandwidth, aR, bR);
-	//IIR_resonator(frequency / monoPcm_->fs, frequency / bandwidth, aL, bL);
-
-	//std::vector<double> filterSR(monoPcm_->length, 0.0);
-	//std::vector<double> filterSL(monoPcm_->length, 0.0);
-	//IIR_Filtering(noizePcm_.sR, filterSR, monoPcm_->length, aR, bR, 2, 2); // noizePcm_ を使用してフィルタリング
-	//IIR_Filtering(noizePcm_.sL, filterSL, monoPcm_->length, aL, bL, 2, 2); // noizePcm_ を使用してフィルタリング
-
-	//for (int n = 0; n < monoPcm_->length; n++) {
-	//	monoPcm_->sR[n] = filterSR[n];
-	//	monoPcm_->sL[n] = filterSL[n];
-	//}
-	//f0;
 }
 
 void SoundWave::CreateSpeechVoice(STEREO_PCM& mosnoPcm,  const std::string& text) {
@@ -172,7 +145,7 @@ void SoundWave::CreateSpeechVoice(STEREO_PCM& mosnoPcm,  const std::string& text
 
 	int current_position = 0; // 現在の位置を管理する変数
 
-	double f0 = 100.0; // 基本周波数
+	
 	int length = int(mosnoPcm.length/text.size());
 	STEREO_PCM copyMonoPcm_;
 	copyMonoPcm_.fs = mosnoPcm.fs;
@@ -192,10 +165,10 @@ void SoundWave::CreateSpeechVoice(STEREO_PCM& mosnoPcm,  const std::string& text
 		if (formant_map.find(c) != formant_map.end()) {
 		
 			for (int i = 0; i < frequency.size(); i++) {
-				frequency [i] = formant_map[c].first[i];
+				frequency[i] = formant_map[c].first[i] * (17.5 /15);
 			}
 			double bandwidth = formant_map[c].second;
-			WaveFilter(copyMonoPcm_, frequency, bandwidth, f0);
+			WaveFilter(copyMonoPcm_, frequency, bandwidth);
 
 			// ディエンファシス
 			std::vector<double> sR(length, 0.0);

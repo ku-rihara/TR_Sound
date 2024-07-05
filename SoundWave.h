@@ -16,7 +16,7 @@ public:
 	STEREO_PCM originalpcm_;
 	STEREO_PCM pcm1_;
 
-	double pronunciationTime_ = 0.5;//発音時間
+	double pronunciationTime_ = 1.0;//発音時間
 	Sound voice_;
 	
 
@@ -29,7 +29,7 @@ public:
 	void WaveVisualize();
 
 	void CreateOriginalWave(double f0);
-	void WaveFilter(STEREO_PCM& monoPcm_, const std::vector <double>& frequency, const double& bandwidth, const double& f0);
+	void WaveFilter(STEREO_PCM& monoPcm_, const std::vector <double>& frequency, const double& bandwidth);
 	void CreateSpeechVoice(STEREO_PCM& mosnoPcm, const std::string& text);
 
 };
