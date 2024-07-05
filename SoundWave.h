@@ -5,29 +5,22 @@
 #include<vector>
 #include<complex>
 
-struct VowelParams {
-	double startTime;
-	double endTime;
-	double pitch;
-	double volume;
-	double F1;
-	double F2;
-	double F3;
-	double F4;
-	double B1;
-	double B2;
-	double B3;
-	double B4;
+struct Sound {
+	int handle;
+	int voiceHandle;
+	bool isStart;
 };
 
-class SoundWave{
+class SoundWave {
 public:
 	MONO_PCM originalpcm_;
 	MONO_PCM noizePcm_;
 	MONO_PCM pcm1_;
-	STEREO_PCM stereoPcm_;
+
+	double pronunciationTime_ = 0.5;//発音時間
+	Sound voice_;
 	
-	
+
 public:
 	void Init();
 	void Update();
@@ -36,12 +29,8 @@ public:
 	void CreateWave();
 	void WaveVisualize();
 
-	void generate_noise_wave( double f0);
-	void generate_formant_noise_wave2(std::vector<double>* consonant_noise, double frequency, double bandwidth, double f0);
-	void generate_formant_noise_wave(MONO_PCM* monoPcm_, double frequency, double bandwidth, double f0);
-	void create_speech_wave_with_noise(const std::string& text);
+	void CreateOriginalWave(double f0);
+	void WaveFilter(MONO_PCM* monoPcm_, const double& frequency, const double& bandwidth, const double& f0);
+	void CreateSpeechVoice(MONO_PCM& mosnoPcm, const std::string& text);
 
-	std::vector<std::complex<double>> DFT(const int& DFTsize, const std::vector <double>& data);
-	void  FFT(std::vector<std::complex<double>>& x, const int& DFTsize,bool isReverse);
 };
-

@@ -80,6 +80,15 @@
     <ClCompile Include="FIR_Filter.cpp">
       <Filter>KamataEngine</Filter>
     </ClCompile>
+    <ClCompile Include="IIR_Filter.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="FFT.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -181,5 +190,8 @@
       <Filter>Function</Filter>
     </ClInclude>
     <ClInclude Include="FIR_Filter.h" />
+    <ClInclude Include="IIR_Filter.h" />
+    <ClInclude Include="FFT.h" />
+    <ClInclude Include="InputManager.h" />
   </ItemGroup>
 </Project>

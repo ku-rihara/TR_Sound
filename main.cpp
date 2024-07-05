@@ -1,4 +1,5 @@
 #include <Novice.h>
+#include"InputManager.h"
 #include"SceneManager.h"
 #include"BaseScene.h"
 
@@ -29,6 +30,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
+		InputManager::Update();
+
 		sceneManager->CangeScene(sceneManager->scene_);
 		sceneManager->Update();
 		///
