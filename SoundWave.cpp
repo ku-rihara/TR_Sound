@@ -5,18 +5,18 @@
 #include <string>
 #include<random>
 #include"InputManager.h"
-
+const int SampleFs = 44100;
 void SoundWave::Init() {
-	pcm1_.fs = 44100;
+	pcm1_.fs = SampleFs;
 	pcm1_.bits = 16;
 	
-
-	noizePcm_.fs = 44100;
+	//ノイズ初期化
+	noizePcm_.fs = SampleFs;
 	noizePcm_.bits = 16;
 	noizePcm_.length = int(noizePcm_.fs );
 	noizePcm_.sR.resize(noizePcm_.length);
 	noizePcm_.sL.resize(noizePcm_.length);
-	CreateOriginalWave(100);
+	CreateOriginalWave(900);
 
 	CreateWave();//波作成
 	wave_write_16bit_stereo(&pcm1_, "Wavename.wav");
@@ -32,10 +32,10 @@ void SoundWave::Update() {
 	}
 }
 
-void SoundWave::Draw() {
+void SoundWave::Draw() { 
 
 	if (voice_.isStart) {
-		Novice::PlayAudio(voice_.handle, false, 0.4f);
+		Novice::PlayAudio(voice_.handle, false, 0.7f);
 		voice_.isStart = false;
 	}
 }
@@ -60,21 +60,32 @@ void SoundWave::WaveVisualize() {
 
 	}
 	for (int i = 0; i < numPoint - 1; i++) {
-		Novice::DrawLine((int)waveR[i].x, (int)waveR[i].y, (int)waveR[i + 1].x, (int)waveR[i + 1].y, BLUE);
-		Novice::DrawLine((int)waveL[i].x, (int)waveL[i].y, (int)waveL[i + 1].x, (int)waveL[i + 1].y, RED);
+		Novice::DrawLine((int)waveR[i].x, (int)waveR[i].y, (int)waveR[i + 1].x, (int)waveR[i + 1].y, WHITE);
+		Novice::DrawLine((int)waveL[i].x, (int)waveL[i].y, (int)waveL[i + 1].x, (int)waveL[i + 1].y, WHITE);
 
 	}
 }
 
 void SoundWave::CreateOriginalWave( double f0) {
 	
+	///*Rosenberg波を生成*/
+	//static double t = 0;
+	//double tau = 0.9;/*声門開大期*/
+	//double tan2 = 0.05;/*声門閉大期*/
+	//
+	//t += freq / (double)SampleFs;
+	//t -= floor(t);
+	//if (t <= tau) {
+	//	noizePcm_[]
+	//}
+
+	/*ノイズ生成*/
 	double phase;
 	for (int i = 1; i <= 120; i++) {
 		phase = (double)rand() / RAND_MAX * 2.0 * M_PI;
 		for (int n = 0; n < noizePcm_.length; n++) {
 			noizePcm_.sR[n] += 30*sin(2.0 * M_PI * i * f0 * n / noizePcm_.fs + phase);
 			noizePcm_.sL[n] += 30 * sin(2.0 * M_PI * i * f0 * n / noizePcm_.fs + phase);
-
 		}
 	}
 
@@ -86,11 +97,11 @@ void SoundWave::CreateOriginalWave( double f0) {
 }
 
 void SoundWave::WaveFilter(STEREO_PCM* monoPcm_, const double& frequency, const double& bandwidth, const double& f0) {
+	//フィルター
 	std::vector<double> aR(3), bR(3);
 	std::vector<double> aL(3), bL(3);
 	IIR_resonator(frequency / monoPcm_->fs, frequency / bandwidth, aR, bR);
 	IIR_resonator(frequency / monoPcm_->fs, frequency / bandwidth, aL, bL);
-
 
 	std::vector<double> filterSR(monoPcm_->length, 0.0);
 	std::vector<double> filterSL(monoPcm_->length, 0.0);
