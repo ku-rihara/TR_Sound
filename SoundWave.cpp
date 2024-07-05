@@ -153,7 +153,7 @@ void SoundWave::CreateSpeechVoice(STEREO_PCM& mosnoPcm,  const std::string& text
 	copyMonoPcm_.length = length;
 	copyMonoPcm_.sR.resize(length);
 	copyMonoPcm_.sL.resize(length);
-
+	std::vector<double> frequency(4);
 	for (char c : text) {
 		std::map<char, std::pair<std::vector<double>, double>> formant_map;
 		formant_map['a'] = { {800.0,1200,2500,3500}, 100.0 };  // あ
@@ -163,7 +163,7 @@ void SoundWave::CreateSpeechVoice(STEREO_PCM& mosnoPcm,  const std::string& text
 		formant_map['o'] = { {500,800,2500,3500}, 100.0 };  // お
 
 		if (formant_map.find(c) != formant_map.end()) {
-			std::vector<double> frequency(4); 
+		
 			for (int i = 0; i < frequency.size(); i++) {
 				frequency [i] = formant_map[c].first[i];
 			}
