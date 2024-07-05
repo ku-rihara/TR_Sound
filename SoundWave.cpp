@@ -78,7 +78,7 @@ void SoundWave::CreateOriginalWave( double f0) {
 	//if (t <= tau) {
 	//	noizePcm_[]
 	//}
-	//のこぎり波
+	/*のこぎり波*/
 	for (int i = 1; i <= 44; i++) {
 		for (int n = 0; n < noizePcm_.length; n++) {
 			noizePcm_.sR[n] += 1.0 / i * sin(2 * M_PI * i * f0 * n / noizePcm_.fs);
