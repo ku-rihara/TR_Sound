@@ -11,12 +11,6 @@ void SoundWave::Init() {
 	pcm1_.fs = SampleFs;
 	pcm1_.bits = 16;
 	
-	//ノイズ初期化
-	originalpcm_.fs = SampleFs;
-	originalpcm_.bits = 16;
-	originalpcm_.length = int(originalpcm_.fs );
-	originalpcm_.sR.resize(originalpcm_.length);
-	originalpcm_.sL.resize(originalpcm_.length);
 	CreateOriginalWave(200);
 
 	CreateWave();//波作成
@@ -68,46 +62,8 @@ void SoundWave::WaveVisualize() {
 }
 
 void SoundWave::CreateOriginalWave( double f0) {
-	
-	///*Rosenberg波を生成*/
-	//static double t = 0;
-	//double tau = 0.9;/*声門開大期*/
-	//double tan2 = 0.05;/*声門閉大期*/
-	//
-	//t += freq / (double)SampleFs;
-	//t -= floor(t);
-	//if (t <= tau) {
-	//	noizePcm_[]
-	//}
-	/*のこぎり波*/
-	for (int i = 1; i <= 44; i++) {
-		for (int n = 0; n < originalpcm_.length; n++) {
-			originalpcm_.sR[n] += 1.0 / i * sin(2 * M_PI * i * f0 * n / originalpcm_.fs);
-			originalpcm_.sL[n] += 1.0 / i * sin(2 * M_PI * i * f0 * n / originalpcm_.fs);
-
-		}
-	}
-	double gain = 0.1;//ゲイン
-	for (int n = 0; n < originalpcm_.length; n++) {
-		originalpcm_.sR[n] *= gain;
-		originalpcm_.sL[n] *= gain;
-	}
-
-	///*ノイズ生成*/
-	//double phase;
-	//for (int i = 1; i <= 120; i++) {
-	//	phase = (double)rand() / RAND_MAX * 2.0 * M_PI;
-	//	for (int n = 0; n < originalpcm_.length; n++) {
-	//		originalpcm_.sR[n] += 30*sin(2.0 * M_PI * i * f0 * n / originalpcm_.fs + phase);
-	//		originalpcm_.sL[n] += 30 * sin(2.0 * M_PI * i * f0 * n / originalpcm_.fs + phase);
-	//	}
-	//}
-
-	//double gain = 0.001; // ゲイン
-	//for (int n = 0; n < originalpcm_.length; n++) {
-	//	originalpcm_.sR[n] *= gain;
-	//	originalpcm_.sL[n] *= gain;
-	//}
+	f0;
+	wave_read_16bit_stereo(&originalpcm_, "pulse_train.wav");
 }
 
 void SoundWave::WaveFilter(STEREO_PCM& stereoPcm, const std::vector <double>& frequency, const double& bandwidth, const double& f0) {
