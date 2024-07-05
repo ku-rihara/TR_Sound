@@ -62,8 +62,35 @@ void SoundWave::WaveVisualize() {
 }
 
 void SoundWave::CreateOriginalWave( double f0) {
-	f0;
-	wave_read_16bit_stereo(&originalpcm_, "pulse_train.wav");
+
+	double t = 0.0;
+	double tau = 0.9;  // 声門開大期
+	double tan2 = 0.05;  // 声門閉大期
+	double fs = originalpcm_.fs;
+	double gain = 0.1; // ゲイン
+
+	for (int n = 0; n < originalpcm_.length; ++n) {
+		double phase = t * f0;
+		double value;
+
+		if (phase <= tau) {
+			value = 0.5 * (1.0 - cos(2.0 * M_PI * phase / tau));
+		}
+		else if (phase <= 1.0) {
+			value = 0.5 * (1.0 + cos(2.0 * M_PI * (phase - tau) / tan2));
+		}
+		else {
+			value = 0.0;
+		}
+
+		originalpcm_.sR[n] = gain * value;
+		originalpcm_.sL[n] = gain * value;
+
+		t += 1.0 / fs;
+		if (t >= 1.0 / f0) {
+			t -= 1.0 / f0;
+		}
+	}
 }
 
 void SoundWave::WaveFilter(STEREO_PCM& stereoPcm, const std::vector <double>& frequency, const double& bandwidth, const double& f0) {
