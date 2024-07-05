@@ -17,7 +17,7 @@ public:
 	MONO_PCM noizePcm_;
 	MONO_PCM pcm1_;
 
-	double pronunciationTime_ = 0.5;//発音時間
+	double pronunciationTime_ = 0.2;//発音時間
 	Sound voice_;
 	
 

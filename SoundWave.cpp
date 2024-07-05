@@ -40,7 +40,7 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	std::string text = "aeiueoa"; // 発話したいテキスト
+	std::string text = "oeeeeu"; // 発話したいテキスト
 	CreateSpeechVoice(pcm1_,text);
 }
 
