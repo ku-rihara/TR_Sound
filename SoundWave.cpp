@@ -16,7 +16,7 @@ void SoundWave::Init() {
 	noizePcm_.length = int(noizePcm_.fs );
 	noizePcm_.sR.resize(noizePcm_.length);
 	noizePcm_.sL.resize(noizePcm_.length);
-	CreateOriginalWave(900);
+	CreateOriginalWave(400);
 
 	CreateWave();//波作成
 	wave_write_16bit_stereo(&pcm1_, "Wavename.wav");
@@ -41,7 +41,7 @@ void SoundWave::Draw() {
 }
 
 void SoundWave::CreateWave() {
-	std::string text = "aeiueoa"; // 発話したいテキスト
+	std::string text = "aiueo"; // 発話したいテキスト
 	CreateSpeechVoice(pcm1_,text);
 }
 
@@ -78,22 +78,35 @@ void SoundWave::CreateOriginalWave( double f0) {
 	//if (t <= tau) {
 	//	noizePcm_[]
 	//}
-
-	/*ノイズ生成*/
-	double phase;
-	for (int i = 1; i <= 120; i++) {
-		phase = (double)rand() / RAND_MAX * 2.0 * M_PI;
+	//のこぎり波
+	for (int i = 1; i <= 44; i++) {
 		for (int n = 0; n < noizePcm_.length; n++) {
-			noizePcm_.sR[n] += 30*sin(2.0 * M_PI * i * f0 * n / noizePcm_.fs + phase);
-			noizePcm_.sL[n] += 30 * sin(2.0 * M_PI * i * f0 * n / noizePcm_.fs + phase);
+			noizePcm_.sR[n] += 1.0 / i * sin(2 * M_PI * i * f0 * n / noizePcm_.fs);
+			noizePcm_.sL[n] += 1.0 / i * sin(2 * M_PI * i * f0 * n / noizePcm_.fs);
+
 		}
 	}
-
-	double gain = 0.001; // ゲイン
+	double gain = 0.1;//ゲイン
 	for (int n = 0; n < noizePcm_.length; n++) {
 		noizePcm_.sR[n] *= gain;
 		noizePcm_.sL[n] *= gain;
 	}
+
+	/*ノイズ生成*/
+	//double phase;
+	//for (int i = 1; i <= 120; i++) {
+	//	phase = (double)rand() / RAND_MAX * 2.0 * M_PI;
+	//	for (int n = 0; n < noizePcm_.length; n++) {
+	//		noizePcm_.sR[n] += 30*sin(2.0 * M_PI * i * f0 * n / noizePcm_.fs + phase);
+	//		noizePcm_.sL[n] += 30 * sin(2.0 * M_PI * i * f0 * n / noizePcm_.fs + phase);
+	//	}
+	//}
+
+	//double gain = 0.001; // ゲイン
+	//for (int n = 0; n < noizePcm_.length; n++) {
+	//	noizePcm_.sR[n] *= gain;
+	//	noizePcm_.sL[n] *= gain;
+	//}
 }
 
 void SoundWave::WaveFilter(STEREO_PCM* monoPcm_, const double& frequency, const double& bandwidth, const double& f0) {
