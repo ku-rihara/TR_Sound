@@ -16,7 +16,7 @@ public:
 	STEREO_PCM originalpcm_;
 	STEREO_PCM pcm1_;
 
-	double pronunciationTime_ = 0.2;//発音時間
+	double pronunciationTime_ = 0.5;//発音時間
 	Sound voice_;
 	
 
